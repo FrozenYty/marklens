@@ -88,6 +88,7 @@ dependencies {
     // Unit tests
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.vintage.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.mockito.kotlin)
