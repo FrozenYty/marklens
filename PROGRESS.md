@@ -14,14 +14,22 @@
 
 ## Right Now
 
-**Phase 0 complete.** Full project skeleton. All dependencies verified against
-Context7 (2026-06-08): AGP 9.2, Kotlin 2.3.21, Compose BOM 2026.05.00, Room 2.8.4,
-CameraX 1.5 + camera-compose, ML Kit 16.0.1. CI passes lint + test + build.
-Team: Tianyu Yao (@FrozenYty), Jianheng Sun (@chemflowers).
+**Phase 1 — Data Layer TDD in progress.** Entities, DAOs, Database, Repository
+all implemented. 5 test classes with 28 tests total. Awaiting CI confirmation.
 
 ```
-Status: Phase 0 DONE → entering Phase 1 (Data Layer TDD)
+Status: Phase 1 code complete → verify CI (./gradlew test)
 ```
+
+## Done
+
+- [x] Phase 0: project init
+- [x] Data entities: Student, ExamRecord, QuestionScore, RegionTemplate
+- [x] DAOs: StudentDao, ExamRecordDao, QuestionScoreDao, RegionTemplateDao
+- [x] Database: MarkLensDatabase (Room, 4 entities, version 1)
+- [x] Repository: ExamRepository (getOrCreateStudent, saveExamWithScores, deleteRecord, templates)
+- [x] Tests: StudentDaoTest, ExamRecordDaoTest, QuestionScoreDaoTest, RegionTemplateDaoTest, ExamRepositoryTest
+- [ ] CI green (pending)
 
 ---
 
