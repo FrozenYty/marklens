@@ -4,6 +4,8 @@ import androidx.room.Room
 import app.cash.turbine.test
 import com.example.marklens.data.MarkLensDatabase
 import com.example.marklens.data.entity.ExamRecord
+import com.example.marklens.data.entity.Student
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -15,6 +17,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
+import kotlinx.coroutines.runBlocking
+
 @org.junit.runner.RunWith(RobolectricTestRunner::class)
 class ExamRecordDaoTest {
 
@@ -23,15 +27,14 @@ class ExamRecordDaoTest {
     private var studentId: Long = 0
 
     @Before
-    fun setUp() {
+    fun setUp() = runBlocking {
         db = Room.inMemoryDatabaseBuilder(
             RuntimeEnvironment.getApplication(),
             MarkLensDatabase::class.java
         ).build()
         dao = db.examRecordDao()
-        // Foreign key: ExamRecord → Student
         studentId = db.studentDao().insert(
-            com.example.marklens.data.entity.Student(name = "Test", studentId = "S1", className = "C1")
+            Student(name = "Test", studentId = "S1", className = "C1")
         )
     }
 

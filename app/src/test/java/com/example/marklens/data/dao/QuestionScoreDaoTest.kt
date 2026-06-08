@@ -3,7 +3,10 @@ package com.example.marklens.data.dao
 import androidx.room.Room
 import app.cash.turbine.test
 import com.example.marklens.data.MarkLensDatabase
+import com.example.marklens.data.entity.ExamRecord
 import com.example.marklens.data.entity.QuestionScore
+import com.example.marklens.data.entity.Student
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -22,18 +25,17 @@ class QuestionScoreDaoTest {
     private var recordId: Long = 0
 
     @Before
-    fun setUp() {
+    fun setUp() = runBlocking {
         db = Room.inMemoryDatabaseBuilder(
             RuntimeEnvironment.getApplication(),
             MarkLensDatabase::class.java
         ).build()
         dao = db.questionScoreDao()
-        // Foreign key chain: QuestionScore → ExamRecord → Student
         val sid = db.studentDao().insert(
-            com.example.marklens.data.entity.Student(name = "T", studentId = "S0", className = "C0")
+            Student(name = "T", studentId = "S0", className = "C0")
         )
         recordId = db.examRecordDao().insert(
-            com.example.marklens.data.entity.ExamRecord(studentId = sid, subject = "Math", totalScore = 100.0, imageUri = "")
+            ExamRecord(studentId = sid, subject = "Math", totalScore = 100.0, imageUri = "")
         )
     }
 
