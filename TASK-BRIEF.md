@@ -53,13 +53,13 @@ Photo → Region Selection → OCR → Structured Parse → Manual Correction �
 |-------|--------|
 | UI | Jetpack Compose + Material 3 |
 | Architecture | MVVM + Repository |
-| Database | Room |
-| OCR | Google ML Kit Text Recognition v16 |
-| Camera | CameraX |
-| Build | Gradle Kotlin DSL |
+| Database | Room 2.8 |
+| OCR | Google ML Kit Text Recognition v16 (offline) |
+| Camera | CameraX 1.5 + camera-compose |
+| Build | Gradle Kotlin DSL + Version Catalog |
 | Min SDK | 26 |
-| Target SDK | 35 |
-| Language | Kotlin |
+| Target SDK | 36 |
+| Language | Kotlin 2.3 |
 
 ## Phases
 

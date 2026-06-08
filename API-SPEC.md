@@ -5,6 +5,8 @@
 >
 > **Authors**: Tianyu Yao, Jianheng Sun
 > **Updated**: 2026-06-08
+> **Dependencies verified** (Context7): AGP 9.2, Kotlin 2.3.21, Compose BOM 2026.05.00,
+> Room 2.8.4, CameraX 1.5 + camera-compose, ML Kit 16.0.1
 
 ---
 

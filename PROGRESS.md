@@ -14,10 +14,10 @@
 
 ## Right Now
 
-**Phase 0 complete.** Full project skeleton with documents, Gradle (Kotlin DSL +
-version catalog + Compose/Room/CameraX/ML Kit deps), CI (lint + test + build),
-API-SPEC contract document, MIT license. Team: Tianyu Yao (@FrozenYty),
-Jianheng Sun (@chemflowers).
+**Phase 0 complete.** Full project skeleton. All dependencies verified against
+Context7 (2026-06-08): AGP 9.2, Kotlin 2.3.21, Compose BOM 2026.05.00, Room 2.8.4,
+CameraX 1.5 + camera-compose, ML Kit 16.0.1. CI passes lint + test + build.
+Team: Tianyu Yao (@FrozenYty), Jianheng Sun (@chemflowers).
 
 ```
 Status: Phase 0 DONE → entering Phase 1 (Data Layer TDD)

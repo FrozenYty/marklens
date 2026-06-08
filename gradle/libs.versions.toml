@@ -1,14 +1,14 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
-compose-bom = "2024.12.01"
-room = "2.6.1"
-camerax = "1.4.1"
+agp = "9.2.0"
+kotlin = "2.3.21"
+ksp = "2.3.21-1.0.29"
+compose-bom = "2026.05.00"
+room = "2.8.4"
+camerax = "1.5.0"
 mlkit-text = "16.0.1"
 coroutines = "1.9.0"
-lifecycle = "2.8.7"
-activity-compose = "1.9.3"
+lifecycle = "2.10.0"
+activity-compose = "1.13.0"
 core-ktx = "1.15.0"
 turbine = "1.2.0"
 mockito-kotlin = "5.4.0"
@@ -47,6 +47,7 @@ camerax-core = { group = "androidx.camera", name = "camera-core", version.ref = 
 camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+camerax-compose = { group = "androidx.camera", name = "camera-compose", version.ref = "camerax" }
 
 # ML Kit
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkit-text" }

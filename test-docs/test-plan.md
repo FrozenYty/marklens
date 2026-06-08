@@ -78,7 +78,8 @@ contracts each test verifies.
 
 | Item | Value |
 |------|-------|
-| Language | Kotlin |
+| Language | Kotlin 2.3 |
+| Camera | CameraX 1.5 + camera-compose (CameraXViewfinder) |
 | Test runner | JUnit 5 (Jupiter) via `useJUnitPlatform()` |
 | Coroutines | `kotlinx.coroutines.test.runTest` + `TestDispatcher` |
 | Mock framework | Mockito-Kotlin |
