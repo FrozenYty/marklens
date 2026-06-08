@@ -23,6 +23,7 @@ class ExamRecordDaoTest {
     private lateinit var db: MarkLensDatabase
     private lateinit var dao: ExamRecordDao
     private var studentId: Long = 0
+    private var otherStudentId: Long = 0
 
     @Before
     fun setUp() = runBlocking {
@@ -33,6 +34,9 @@ class ExamRecordDaoTest {
         dao = db.examRecordDao()
         studentId = db.studentDao().insert(
             Student(name = "Test", studentId = "S1", className = "C1")
+        )
+        otherStudentId = db.studentDao().insert(
+            Student(name = "Other", studentId = "S2", className = "C2")
         )
     }
 
@@ -63,7 +67,7 @@ class ExamRecordDaoTest {
     @Test
     fun getBySubject_shouldFilterCorrectly() = runTest {
         dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.insert(createRecord(studentId, "English", 85.0))
+        dao.insert(createRecord(otherStudentId, "English", 85.0))
         dao.insert(createRecord(studentId, "Math", 78.0))
 
         dao.getBySubject("Math").test {
@@ -77,7 +81,7 @@ class ExamRecordDaoTest {
     @Test
     fun getByStudentId_shouldReturnOnlyThatStudent() = runTest {
         dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.insert(createRecord(studentId, "Math", 85.0))
+        dao.insert(createRecord(otherStudentId, "Math", 85.0))
         dao.insert(createRecord(studentId, "English", 88.0))
 
         dao.getByStudentId(studentId).test {
@@ -103,7 +107,7 @@ class ExamRecordDaoTest {
     @Test
     fun getAll_shouldEmitAllRecords() = runTest {
         dao.insert(createRecord(studentId, "A", 100.0))
-        dao.insert(createRecord(studentId, "B", 90.0))
+        dao.insert(createRecord(otherStudentId, "B", 90.0))
 
         dao.getAll().test {
             assertEquals(2, awaitItem().size)
