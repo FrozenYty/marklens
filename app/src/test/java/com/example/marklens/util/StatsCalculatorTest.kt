@@ -74,12 +74,12 @@ class StatsCalculatorTest {
     fun perQuestionStats_shouldComputeErrorRates() {
         val allScores = mapOf(
             1L to listOf(score(1, 1, 10.0, 10.0), score(1, 2, 5.0, 10.0)),
-            2L to listOf(score(2, 1, 8.0, 10.0), score(2, 2, 6.0, 10.0))
+            2L to listOf(score(2, 1, 10.0, 10.0), score(2, 2, 6.0, 10.0))
         )
         val stats = calc.perQuestionStats(allScores)
         assertEquals(2, stats.size)
-        assertEquals(9.0, stats[0].averageScore, 0.5)
-        assertEquals(0.0, stats[0].errorRate, 0.01) // Q1: all correct
+        assertEquals(10.0, stats[0].averageScore, 0.01)
+        assertEquals(0.0, stats[0].errorRate, 0.01) // Q1: all correct (10+10)
         assertEquals(5.5, stats[1].averageScore, 0.5)
         assertEquals(1.0, stats[1].errorRate, 0.01) // Q2: both wrong
     }
