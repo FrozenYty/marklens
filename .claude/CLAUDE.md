@@ -61,5 +61,18 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 ## 7. Language & Commit
 
 - **English only** for code, comments, docs, commit messages.
-- Commit format: `<type>: <short description>\n\nAuthor: Tianyu Yao`
+- Commit format:
+  ```
+  <type>: <short description>
+
+  Author: <Your Name>
+  ```
 - Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`.
+- Every Kotlin file must have `@author Your Name` in KDoc.
+
+## 8. Team
+
+| Member | GitHub | Role |
+|--------|--------|------|
+| Tianyu Yao | FrozenYty | Lead — architecture, TDD, OCR pipeline, CI |
+| Jianheng Sun | (add username) | Developer — UI, parser, statistics |

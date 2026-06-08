@@ -69,6 +69,13 @@ cd marklens
 ./gradlew connectedAndroidTest
 ```
 
-## Author
+## Team
 
-Tianyu Yao
+| Name | GitHub | Role |
+|------|--------|------|
+| Tianyu Yao | [FrozenYty](https://github.com/FrozenYty) | Project Lead |
+| Jianheng Sun | — | Developer |
+
+## License
+
+MIT — see [LICENSE](LICENSE)
