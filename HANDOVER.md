@@ -201,15 +201,16 @@ If CI fails → fix the issue → commit → push. CI runs in ~2 minutes.
 
 ### Phase 5: Polish (Priority)
 
-| Task | Detail | Effort |
-|------|--------|--------|
-| 🔴 CameraX integration | Wire up real camera to CaptureScreen. Use `CameraXViewfinder` from `camera-compose` dependency. | Medium |
-| 🔴 Save pipeline | Connect ReviewScreen → ExamRepository.saveExamWithScores. Parse String scores to Doubles, call repo. | Small |
-| 🟡 RecordListScreen | List all saved records with subject filter. Tap → detail view. | Medium |
-| 🟡 StatsScreen | Show StatsResult with Compose Canvas bar charts or simple text layout. | Medium |
-| 🟢 Compose UI tests | Add instrumented tests for CaptureScreen and ReviewScreen (needs emulator). | Medium |
-| 🟢 Template save/load | Save region presets to RegionTemplateDao. Load template → auto-create regions. | Small |
-| 🟢 Region label picker | Dropdown or bottom sheet to select label when creating regions (currently all labeled CUSTOM). | Small |
+| # | Task | Detail | Effort |
+|---|------|--------|--------|
+| 🔴 1 | CameraX integration | Wire up real camera to CaptureScreen. Use `CameraXViewfinder` from `camera-compose` dependency. | Medium |
+| 🔴 2 | Save pipeline | Connect ReviewScreen → ExamRepository.saveExamWithScores. Parse String scores to Doubles, call repo. | Small |
+| 🔴 3 | **Screenshots for deliverable** | Capture 6-8 screenshots showing full pipeline. See Section 11 below. | Small |
+| 🟡 4 | RecordListScreen | List all saved records with subject filter. Tap → detail view. | Medium |
+| 🟡 5 | StatsScreen | Show StatsResult with Compose Canvas bar charts or simple text layout. | Medium |
+| 🟢 6 | Compose UI tests | Add instrumented tests for CaptureScreen and ReviewScreen (needs emulator). | Medium |
+| 🟢 7 | Template save/load | Save region presets to RegionTemplateDao. Load template → auto-create regions. | Small |
+| 🟢 8 | Region label picker | Dropdown or bottom sheet to select label when creating regions. | Small |
 
 ### Beyond Phase 5 (Nice-to-Have)
 
@@ -251,6 +252,52 @@ If CI fails → fix the issue → commit → push. CI runs in ~2 minutes.
 | `test-docs/phase1-4-*.md` | Per-phase implementation docs with lessons learned |
 | `app/src/test/resources/robolectric.properties` | Robolectric SDK config (don't change) |
 | `gradle/libs.versions.toml` | All dependency versions |
+
+---
+
+## 11. Final Deliverable — Screenshots
+
+The course requires UI interface screenshots showing the full pipeline.
+Capture these on an emulator or physical device.
+
+### Required Screenshots (minimum 6)
+
+| # | Screen | What to show |
+|---|--------|-------------|
+| 1 | `screenshots/01-region-selection.png` | CaptureScreen with photo loaded + 4-5 regions drawn with labels |
+| 2 | `screenshots/02-region-label-picker.png` | Label selection dropdown/bottom sheet (if implemented) |
+| 3 | `screenshots/03-review-screen.png` | ReviewScreen with parsed student info + scores |
+| 4 | `screenshots/04-review-edit.png` | ReviewScreen mid-edit (typing a correction) |
+| 5 | `screenshots/05-record-list.png` | RecordListScreen with saved records |
+| 6 | `screenshots/06-stats-screen.png` | StatsScreen with charts/distribution |
+
+### Optional (if time permits)
+
+| # | Screen |
+|---|--------|
+| 7 | `screenshots/07-save-confirmed.png` | "Saved ✓" confirmation state |
+| 8 | `screenshots/08-csv-export.png` | CSV export result or share sheet |
+
+### How to Capture
+
+Emulator:
+```bash
+# Take screenshot via adb
+adb exec-out screencap -p > screenshots/01-region-selection.png
+
+# Or use emulator's built-in screenshot button (camera icon in toolbar)
+```
+
+Physical device:
+- Use Android Studio's Logcat tab → Screenshot button
+- Or device's hardware buttons (Power + Volume Down)
+
+### Screenshot Quality Rules
+
+- **Resolution**: Use a 1080p emulator (1080×2400) for consistent sizing
+- **Content**: Use realistic test data (e.g., "Alice Wang", "2024001", "Math", scores 8/10, 7.5/10, 9/10)
+- **Clean state**: No debug overlays, no system notifications visible
+- **Naming**: `screenshots/XX-description.png` in the `screenshots/` folder
 
 ---
 
