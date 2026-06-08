@@ -7,6 +7,7 @@ room = "2.8.4"
 camerax = "1.5.0"
 mlkit-text = "16.0.1"
 coroutines = "1.9.0"
+coroutines-play-services = "1.9.0"
 lifecycle = "2.10.0"
 activity-compose = "1.13.0"
 core-ktx = "1.15.0"
@@ -55,6 +56,7 @@ mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition"
 
 # Coroutines
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines-play-services" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
 # Testing

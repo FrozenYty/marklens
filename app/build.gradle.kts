@@ -84,6 +84,7 @@ dependencies {
 
     // Coroutines
     implementation(libs.coroutines.core)
+    implementation(libs.coroutines.play.services)
 
     // Unit tests
     testImplementation(libs.junit.jupiter)
