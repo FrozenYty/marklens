@@ -4,7 +4,9 @@ import android.graphics.RectF
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.robolectric.RobolectricTestRunner
 
+@org.junit.runner.RunWith(RobolectricTestRunner::class)
 class RegionMapperTest {
 
     private val mapper = RegionMapper()

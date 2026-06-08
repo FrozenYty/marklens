@@ -5,12 +5,6 @@ import android.graphics.RectF
 import com.example.marklens.ocr.OcrRegion
 import com.example.marklens.ocr.RegionLabel
 import com.example.marklens.ui.capture.CaptureViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -18,33 +12,32 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.robolectric.RobolectricTestRunner
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@org.junit.runner.RunWith(RobolectricTestRunner::class)
 class CaptureViewModelTest {
 
-    private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: CaptureViewModel
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
         viewModel = CaptureViewModel()
     }
 
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
+        viewModel.uiState.value.capturedBitmap?.recycle()
     }
 
     @Test
-    fun initialState_shouldHaveNoPhotoAndNoRegions() = runTest {
+    fun initialState_shouldHaveNoPhotoAndNoRegions() {
         val state = viewModel.uiState.value
         assertNull(state.capturedBitmap)
         assertTrue(state.regions.isEmpty())
     }
 
     @Test
-    fun setPhoto_shouldUpdateBitmap() = runTest {
+    fun setPhoto_shouldUpdateBitmap() {
         val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
         viewModel.setPhoto(bitmap)
         val state = viewModel.uiState.value
@@ -52,7 +45,7 @@ class CaptureViewModelTest {
     }
 
     @Test
-    fun addRegion_shouldAppendToList() = runTest {
+    fun addRegion_shouldAppendToList() {
         viewModel.setPhoto(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
         val region = OcrRegion(label = RegionLabel.STUDENT_NAME, rect = RectF(0.1f, 0.1f, 0.5f, 0.2f))
         viewModel.addRegion(region)
@@ -62,7 +55,7 @@ class CaptureViewModelTest {
     }
 
     @Test
-    fun deleteRegion_shouldRemoveIt() = runTest {
+    fun deleteRegion_shouldRemoveIt() {
         viewModel.setPhoto(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
         val region = OcrRegion(label = RegionLabel.TOTAL_SCORE, rect = RectF(0.1f, 0.1f, 0.5f, 0.2f))
         viewModel.addRegion(region)
@@ -71,7 +64,7 @@ class CaptureViewModelTest {
     }
 
     @Test
-    fun moveRegion_shouldUpdateRect() = runTest {
+    fun moveRegion_shouldUpdateRect() {
         viewModel.setPhoto(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
         val region = OcrRegion(label = RegionLabel.SUBJECT, rect = RectF(0.1f, 0.1f, 0.3f, 0.2f))
         viewModel.addRegion(region)
@@ -81,7 +74,7 @@ class CaptureViewModelTest {
     }
 
     @Test
-    fun changeLabel_shouldUpdateRegionLabel() = runTest {
+    fun changeLabel_shouldUpdateRegionLabel() {
         viewModel.setPhoto(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
         val region = OcrRegion(label = RegionLabel.CUSTOM, rect = RectF(0.1f, 0.1f, 0.3f, 0.2f))
         viewModel.addRegion(region)
@@ -90,7 +83,7 @@ class CaptureViewModelTest {
     }
 
     @Test
-    fun clearRegions_shouldRemoveAll() = runTest {
+    fun clearRegions_shouldRemoveAll() {
         viewModel.setPhoto(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
         viewModel.addRegion(OcrRegion(label = RegionLabel.CUSTOM, rect = RectF(0f, 0f, 0.1f, 0.1f)))
         viewModel.addRegion(OcrRegion(label = RegionLabel.CUSTOM, rect = RectF(0.1f, 0.1f, 0.2f, 0.2f)))
