@@ -59,7 +59,7 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 
 | Layer | Tool | Runner | Location |
 |-------|------|--------|----------|
-| DAO | Room in-memory + `runTest` | JUnit 5 | `test/.../data/dao/` |
+| DAO | Room in-memory + Robolectric + `runTest` | Robolectric + JUnit 5 | `test/.../data/dao/` |
 | Repository | Mock DAOs | JUnit 5 | `test/.../data/repository/` |
 | ViewModel | Fake Repository + Turbine | JUnit 5 | `test/.../ui/` |
 | Parser | Pure JUnit (string → entity) | JUnit 5 | `test/.../parser/` |

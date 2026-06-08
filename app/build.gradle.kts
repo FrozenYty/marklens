@@ -92,6 +92,7 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.room.testing)
+    testImplementation(libs.robolectric)
 
     // Instrumented tests
     androidTestImplementation(libs.compose.ui.test)

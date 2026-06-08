@@ -1,7 +1,6 @@
 package com.example.marklens.data
 
 import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.example.marklens.data.entity.QuestionScore
 import kotlinx.coroutines.test.runTest
@@ -12,7 +11,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
+@org.junit.runner.RunWith(RobolectricTestRunner::class)
 class ExamRepositoryTest {
 
     private lateinit var db: MarkLensDatabase
@@ -21,7 +23,7 @@ class ExamRepositoryTest {
     @Before
     fun setUp() {
         db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
+            RuntimeEnvironment.getApplication(),
             MarkLensDatabase::class.java
         ).build()
         repo = ExamRepository(db.studentDao(), db.examRecordDao(), db.questionScoreDao(), db.regionTemplateDao())

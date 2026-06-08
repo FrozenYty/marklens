@@ -1,19 +1,21 @@
 package com.example.marklens.data.dao
 
 import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.example.marklens.data.MarkLensDatabase
 import com.example.marklens.data.entity.Student
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
+@org.junit.runner.RunWith(RobolectricTestRunner::class)
 class StudentDaoTest {
 
     private lateinit var db: MarkLensDatabase
@@ -22,7 +24,7 @@ class StudentDaoTest {
     @Before
     fun setUp() {
         db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
+            RuntimeEnvironment.getApplication(),
             MarkLensDatabase::class.java
         ).build()
         dao = db.studentDao()
@@ -91,7 +93,7 @@ class StudentDaoTest {
 
         dao.getAll().test {
             val students = awaitItem()
-            assertThat(students).hasSize(2)
+            assertEquals(2, students.size)
             cancelAndIgnoreRemainingEvents()
         }
     }
