@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
-import kotlinx.coroutines.runBlocking
-
 @org.junit.runner.RunWith(RobolectricTestRunner::class)
 class ExamRecordDaoTest {
 
