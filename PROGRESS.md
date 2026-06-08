@@ -14,12 +14,12 @@
 
 ## Right Now
 
-**Phase 2 in progress.** OcrEngine (ML Kit wrapper), RegionMapper, CaptureViewModel
-implemented. 12 new tests (5 RegionMapper + 7 CaptureViewModel). CameraX Compose
-UI next.
+**Phase 2 in progress.** OcrEngine (ML Kit wrapper), RegionMapper (first-match-wins),
+CaptureViewModel (region CRUD) implemented. 12 tests pass (5 RegionMapper + 7 ViewModel).
+CameraX Compose UI next.
 
 ```
-Status: Phase 2 — region logic done → CameraX + Compose UI next
+Status: Phase 2 — region logic ✅ → CameraX + Compose UI next
 ```
 
 ---

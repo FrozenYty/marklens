@@ -69,6 +69,15 @@ CaptureViewModel (rawText filled)
 |---------|---------|---------|
 | kotlinx-coroutines-play-services | 1.9.0 | `Task.await()` for ML Kit |
 
+## Lessons Learned
+
+| # | Pitfall | Resolution |
+|---|---------|------------|
+| 1 | Tests using `android.graphics.RectF`/`Bitmap` fail on JVM without Robolectric | Always add `@RunWith(RobolectricTestRunner)` when the class touches any `android.graphics.*` type, even if no DB or Context is involved |
+| 2 | `MutableStateFlow.update {}` is synchronous — no coroutine dispatcher needed | Don't use `Dispatchers.setMain()` for ViewModel tests unless the ViewModel launches coroutines explicitly |
+| 3 | Two overlapping OCR regions both capture the same TextBlock with independent `filter{}` | Use `BooleanArray` index tracking + `for` loop for first-match-wins semantics |
+| 4 | Google Play Services `Task<T>` needs `kotlinx-coroutines-play-services` for `Task.await()` | Dependency added: `org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0` |
+
 ## Next
 
 - CameraX + Compose capture screen with region drawing overlay
