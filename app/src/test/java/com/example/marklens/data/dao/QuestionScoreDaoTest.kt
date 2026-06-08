@@ -19,6 +19,7 @@ class QuestionScoreDaoTest {
 
     private lateinit var db: MarkLensDatabase
     private lateinit var dao: QuestionScoreDao
+    private var recordId: Long = 0
 
     @Before
     fun setUp() {
@@ -27,6 +28,13 @@ class QuestionScoreDaoTest {
             MarkLensDatabase::class.java
         ).build()
         dao = db.questionScoreDao()
+        // Foreign key chain: QuestionScore → ExamRecord → Student
+        val sid = db.studentDao().insert(
+            com.example.marklens.data.entity.Student(name = "T", studentId = "S0", className = "C0")
+        )
+        recordId = db.examRecordDao().insert(
+            com.example.marklens.data.entity.ExamRecord(studentId = sid, subject = "Math", totalScore = 100.0, imageUri = "")
+        )
     }
 
     @After
@@ -37,8 +45,8 @@ class QuestionScoreDaoTest {
     @Test
     fun insertAll_shouldPersistScores() = runTest {
         dao.insertAll(listOf(
-            QuestionScore(examRecordId = 1, questionNumber = 1, score = 8.0, maxScore = 10.0, isWrong = false),
-            QuestionScore(examRecordId = 1, questionNumber = 2, score = 5.0, maxScore = 10.0, isWrong = true)
+            QuestionScore(examRecordId = recordId, questionNumber = 1, score = 8.0, maxScore = 10.0, isWrong = false),
+            QuestionScore(examRecordId = recordId, questionNumber = 2, score = 5.0, maxScore = 10.0, isWrong = true)
         ))
 
         dao.getByExamRecord(1).test {
@@ -50,8 +58,8 @@ class QuestionScoreDaoTest {
     @Test
     fun getByExamRecord_shouldReturnOrderedByQuestionNumber() = runTest {
         dao.insertAll(listOf(
-            QuestionScore(examRecordId = 1, questionNumber = 3, score = 7.0, maxScore = 10.0, isWrong = false),
-            QuestionScore(examRecordId = 1, questionNumber = 1, score = 9.0, maxScore = 10.0, isWrong = false)
+            QuestionScore(examRecordId = recordId, questionNumber = 3, score = 7.0, maxScore = 10.0, isWrong = false),
+            QuestionScore(examRecordId = recordId, questionNumber = 1, score = 9.0, maxScore = 10.0, isWrong = false)
         ))
 
         dao.getByExamRecord(1).test {
@@ -65,7 +73,7 @@ class QuestionScoreDaoTest {
     @Test
     fun getByExamRecordOnce_shouldReturnList() = runTest {
         dao.insertAll(listOf(
-            QuestionScore(examRecordId = 2, questionNumber = 1, score = 10.0, maxScore = 10.0, isWrong = false)
+            QuestionScore(examRecordId = recordId, questionNumber = 1, score = 10.0, maxScore = 10.0, isWrong = false)
         ))
         val scores = dao.getByExamRecordOnce(2)
         assertEquals(1, scores.size)
@@ -75,7 +83,7 @@ class QuestionScoreDaoTest {
     @Test
     fun update_shouldPersistChanges() = runTest {
         dao.insertAll(listOf(
-            QuestionScore(id = 0, examRecordId = 1, questionNumber = 1, score = 0.0, maxScore = 10.0, isWrong = true)
+            QuestionScore(id = 0, examRecordId = recordId, questionNumber = 1, score = 0.0, maxScore = 10.0, isWrong = true)
         ))
 
         val scores = dao.getByExamRecordOnce(1)
@@ -89,7 +97,7 @@ class QuestionScoreDaoTest {
     @Test
     fun deleteByExamRecord_shouldRemoveAllScores() = runTest {
         dao.insertAll(listOf(
-            QuestionScore(examRecordId = 1, questionNumber = 1, score = 8.0, maxScore = 10.0, isWrong = false)
+            QuestionScore(examRecordId = recordId, questionNumber = 1, score = 8.0, maxScore = 10.0, isWrong = false)
         ))
         dao.deleteByExamRecord(1)
 

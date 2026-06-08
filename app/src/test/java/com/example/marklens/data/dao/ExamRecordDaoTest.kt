@@ -20,6 +20,7 @@ class ExamRecordDaoTest {
 
     private lateinit var db: MarkLensDatabase
     private lateinit var dao: ExamRecordDao
+    private var studentId: Long = 0
 
     @Before
     fun setUp() {
@@ -28,6 +29,10 @@ class ExamRecordDaoTest {
             MarkLensDatabase::class.java
         ).build()
         dao = db.examRecordDao()
+        // Foreign key: ExamRecord → Student
+        studentId = db.studentDao().insert(
+            com.example.marklens.data.entity.Student(name = "Test", studentId = "S1", className = "C1")
+        )
     }
 
     @After
@@ -37,13 +42,13 @@ class ExamRecordDaoTest {
 
     @Test
     fun insert_shouldReturnNonZeroId() = runTest {
-        val id = dao.insert(createRecord(1, "Math", 95.0))
+        val id = dao.insert(createRecord(studentId, "Math", 95.0))
         assertTrue(id > 0)
     }
 
     @Test
     fun getById_shouldReturnCorrectRecord() = runTest {
-        val id = dao.insert(createRecord(1, "Physics", 88.5))
+        val id = dao.insert(createRecord(studentId, "Physics", 88.5))
         val result = dao.getById(id)
         assertNotNull(result)
         assertEquals("Physics", result!!.subject)
@@ -56,8 +61,8 @@ class ExamRecordDaoTest {
 
     @Test
     fun getBySubject_shouldFilterCorrectly() = runTest {
-        dao.insert(createRecord(1, "Math", 90.0))
-        dao.insert(createRecord(2, "English", 85.0))
+        dao.insert(createRecord(studentId, "Math", 90.0))
+        dao.insert(createRecord(studentId + 1, "English", 85.0))
         dao.insert(createRecord(3, "Math", 78.0))
 
         dao.getBySubject("Math").test {
@@ -70,9 +75,9 @@ class ExamRecordDaoTest {
 
     @Test
     fun getByStudentId_shouldReturnOnlyThatStudent() = runTest {
-        dao.insert(createRecord(1, "Math", 90.0))
-        dao.insert(createRecord(2, "Math", 85.0))
-        dao.insert(createRecord(1, "English", 88.0))
+        dao.insert(createRecord(studentId, "Math", 90.0))
+        dao.insert(createRecord(studentId + 1, "Math", 85.0))
+        dao.insert(createRecord(studentId, "English", 88.0))
 
         dao.getByStudentId(1).test {
             assertEquals(2, awaitItem().size)
@@ -82,22 +87,22 @@ class ExamRecordDaoTest {
 
     @Test
     fun update_shouldPersistChanges() = runTest {
-        val id = dao.insert(createRecord(1, "Math", 90.0))
+        val id = dao.insert(createRecord(studentId, "Math", 90.0))
         dao.update(ExamRecord(id = id, studentId = 1, subject = "Math", totalScore = 95.0, imageUri = ""))
         assertEquals(95.0, dao.getById(id)!!.totalScore, 0.01)
     }
 
     @Test
     fun delete_shouldRemoveRecord() = runTest {
-        val id = dao.insert(createRecord(1, "Math", 90.0))
+        val id = dao.insert(createRecord(studentId, "Math", 90.0))
         dao.delete(ExamRecord(id = id, studentId = 1, subject = "Math", totalScore = 90.0, imageUri = ""))
         assertNull(dao.getById(id))
     }
 
     @Test
     fun getAll_shouldEmitAllRecords() = runTest {
-        dao.insert(createRecord(1, "A", 100.0))
-        dao.insert(createRecord(2, "B", 90.0))
+        dao.insert(createRecord(studentId, "A", 100.0))
+        dao.insert(createRecord(studentId + 1, "B", 90.0))
 
         dao.getAll().test {
             assertEquals(2, awaitItem().size)
