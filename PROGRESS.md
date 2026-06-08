@@ -9,17 +9,16 @@
 
 | Field | Value |
 |-------|-------|
-| **Working on** | Phase 2 — Capture + OCR |
+| **Working on** | Phase 3 — Parse + Edit |
 | **Last updated** | 2026-06-08 |
 
 ## Right Now
 
-**Phase 2 in progress.** OcrEngine (ML Kit wrapper), RegionMapper (first-match-wins),
-CaptureViewModel (region CRUD) implemented. 12 tests pass (5 RegionMapper + 7 ViewModel).
-CameraX Compose UI next.
+**Phase 3 — Parse + Edit in progress.** ScoreParser, StudentInfoParser, ReviewViewModel
+implemented. 17 new tests. Remaining: ReviewScreen composable.
 
 ```
-Status: Phase 2 — region logic ✅ → CameraX + Compose UI next
+Status: Phase 3 — parsers + ViewModel ✅ → ReviewScreen UI next
 ```
 
 ---
@@ -47,7 +46,8 @@ Status: Phase 2 — region logic ✅ → CameraX + Compose UI next
 |-------|-------|--------|
 | 0 | Project init | ✅ Done |
 | 1 | Data layer TDD | ✅ Done — 32/32 tests |
-| 2 | Capture + OCR | 🔄 In progress |
+| 2 | Capture + OCR | ✅ Done |
+| 3 | Parse + Edit | 🔄 In progress |
 | 3 | Parse + Edit | Pending |
 | 4 | Stats + Export | Pending |
 | 5 | Polish | Pending |

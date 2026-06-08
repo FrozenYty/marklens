@@ -67,7 +67,7 @@ Photo → Region Selection → OCR → Structured Parse → Manual Correction �
 |-------|-------|-----------------|--------|
 | 0 | Project init | CLAUDE.md, Gradle skeleton, CI, GitHub repo | ✅ Done |
 | 1 | Data layer TDD | Room entities, DAOs, Repository — all test-driven | ✅ Done |
-| 2 | Capture + OCR | CameraX, region selection UI, ML Kit integration | 🔄 In progress |
-| 3 | Parse + Edit | Structured parser, correction UI, save to DB | Pending |
+| 2 | Capture + OCR | CameraX, region selection UI, ML Kit integration | ✅ Done |
+| 3 | Parse + Edit | Structured parser, correction UI, save to DB | 🔄 In progress |
 | 4 | Stats + Export | List/detail screens, statistics, CSV export | Pending |
 | 5 | Polish | Compose UI tests, bug fixes, docs | Pending |
