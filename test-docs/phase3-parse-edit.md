@@ -51,7 +51,15 @@ correction UI for manual fixes before saving.
 | 10 | `toDoubleOrNull()` for non-numeric OCR output | Returns 0.0 for garbage text — don't crash on bad OCR |
 | 11 | ScoreField.score is String for editability | Keep as String in UiState; parse to Double at save time |
 
+## UI Layer Notes
+
+| # | Caveat | Detail |
+|---|--------|--------|
+| 12 | Score fields use String for easy OCR correction | Keep score as String in UI; parse to Double only when saving |
+| 13 | SectionCard pattern for form grouping | White alpha-0.95 cards on dark Ink background — clean reading contrast |
+| 14 | OutlinedTextField with MarkLens theme colors | Green focus border, red cursor, Slate unfocused — consistent with design system |
+
 ## Next
 
-- ReviewScreen composable (editable form with region thumbnails)
 - Save pipeline integration (ReviewViewModel → ExamRepository.saveExamWithScores)
+- Phase 4: Statistics + Export
