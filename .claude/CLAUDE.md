@@ -44,6 +44,7 @@ Compose UI → ViewModel → Repository → Room DAO → SQLite
 - Entities in `data/entity/`. DAOs in `data/dao/`. Database in `data/`.
 - All DAO write methods are `suspend`. Read methods return `Flow<List<T>>`.
 - Schema export: `app/schemas/`. Migration tested with `MigrationTestHelper`.
+- **DAO test FK pattern:** Create all parent rows in `@Before` using `fun setUp() = runBlocking { ... }` (Room DAOs are suspend, `@Before` is not). Never hardcode FK values — use variables set in `setUp()`. Add `robolectric.properties` with `sdk=34` when compileSdk exceeds Robolectric's supported version.
 
 ## 5. Core Pipeline (O2C2R)
 
@@ -70,7 +71,25 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 - All `@Test` annotations for unit tests import `org.junit.jupiter.api.Test`.
 - Instrumented tests use `androidx.test.ext.junit.runners.AndroidJUnit4`.
 
-## 7. Language & Commit
+## 7. Fix All Issues Together
+
+**CI failures are multi-root-cause by default. Fix everything in one pass.**
+
+- Read the ENTIRE error log, not just the first error. One build failure often masks a second that appears in the next CI round.
+- After a version bump or build config change, run `./gradlew test` locally and list ALL compilation errors and test failures before fixing any.
+- Commit the complete fix set together — partial commits waste CI rounds.
+- When a test failure is caused by data setup (e.g., missing FK parent rows), fix ALL tests that share the same setup pattern, not just the one that failed.
+
+## 8. Stop and Pivot After 3 Rounds
+
+**Three CI failures of the same class = the approach is wrong.**
+
+- If CI fails 3+ times on the same type of error (same exception class, same compilation category), stop patching individual symptoms.
+- Query Context7 or official docs for the ROOT cause and complete migration guide.
+- If official docs point to a fundamentally different approach (e.g., "kotlin-android plugin not needed since AGP 9.0"), abandon the fix-and-push cycle and restructure.
+- This applies equally to runtime debugging: 5+ failed Python API attempts before discovering `frida -q -t` mode is the canonical case study.
+
+## 9. Language & Commit
 
 - **English only** for code, comments, docs, commit messages.
 - Commit format:
@@ -82,9 +101,9 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 - Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`.
 - Every Kotlin file must have `@author Your Name` in KDoc.
 
-## 8. Team
+## 10. Team
 
 | Member | GitHub | Role |
 |--------|--------|------|
-| Tianyu Yao | FrozenYty | Lead — architecture, TDD, OCR pipeline, CI |
+| Tianyu Yao | [FrozenYty](https://github.com/FrozenYty) | Lead — architecture, TDD, OCR pipeline, CI |
 | Jianheng Sun | [chemflowers](https://github.com/chemflowers) | Developer — UI, parser, statistics |
