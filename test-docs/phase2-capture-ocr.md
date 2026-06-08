@@ -78,6 +78,15 @@ CaptureViewModel (rawText filled)
 | 3 | Two overlapping OCR regions both capture the same TextBlock with independent `filter{}` | Use `BooleanArray` index tracking + `for` loop for first-match-wins semantics |
 | 4 | Google Play Services `Task<T>` needs `kotlinx-coroutines-play-services` for `Task.await()` | Dependency added: `org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0` |
 
+## UI Layer Notes
+
+| # | Caveat | Detail |
+|---|--------|--------|
+| 5 | Canvas label drawing uses `nativeCanvas.drawText()` | Compose Canvas has no built-in text API — use `drawContext.canvas.nativeCanvas` to access the Android Canvas directly for region labels |
+| 6 | `detectDragGestures` for region creation | Use `onDragStart` (tap existing = select, empty area = start new region), `onDrag` (update preview rect), `onDragEnd` (finalize if size > 1% of image) |
+| 7 | Normalized coords [0,1] ↔ pixels | Multiply by canvas `size.width/height` for display; divide by canvas size for normalization. Always coerce to [0,1] range |
+| 8 | Camera preview not tested in CI | CameraX + Compose UI requires device/emulator; unit tests cover ViewModel logic only |
+
 ## Next
 
 - CameraX + Compose capture screen with region drawing overlay

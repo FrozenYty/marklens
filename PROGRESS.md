@@ -35,7 +35,7 @@ Status: Phase 2 — region logic ✅ → CameraX + Compose UI next
 - [x] OcrRegion + RegionLabel data model
 - [x] RegionMapper (spatial OCR block → region mapping, 5 unit tests)
 - [x] CaptureViewModel (photo, region CRUD, 7 unit tests)
-- [ ] CameraX + Compose capture screen (PreviewView + region overlay)
+- [x] CameraX + Compose capture screen (Canvas overlay + drag-to-create regions)
 - [ ] Phase 2 integration (OCR pipeline end-to-end)
 - [ ] Phase 3 (Parsing + Correction UI)
 - [ ] Phase 4 (Statistics + Export)
