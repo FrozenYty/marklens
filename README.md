@@ -74,7 +74,7 @@ cd marklens
 | Name | GitHub | Role |
 |------|--------|------|
 | Tianyu Yao | [FrozenYty](https://github.com/FrozenYty) | Project Lead |
-| Jianheng Sun | — | Developer |
+| Jianheng Sun | [chemflowers](https://github.com/chemflowers) | Developer |
 
 ## License
 

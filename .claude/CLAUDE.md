@@ -75,4 +75,4 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 | Member | GitHub | Role |
 |--------|--------|------|
 | Tianyu Yao | FrozenYty | Lead — architecture, TDD, OCR pipeline, CI |
-| Jianheng Sun | (add username) | Developer — UI, parser, statistics |
+| Jianheng Sun | [chemflowers](https://github.com/chemflowers) | Developer — UI, parser, statistics |
