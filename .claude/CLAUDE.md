@@ -3,6 +3,14 @@
 Project-level behavioral rules for the MarkLens Android app. All universal
 guidelines are inherited from the user-level `~/.claude/CLAUDE.md`.
 
+**Required reading for all collaborators:**
+1. This file (`.claude/CLAUDE.md`) — rules and conventions
+2. [API-SPEC.md](../API-SPEC.md) — all contracts: entities, DAOs, UiStates, routes
+3. [TASK-BRIEF.md](../TASK-BRIEF.md) — feature requirements and phase plan
+4. [test-docs/test-plan.md](../test-docs/test-plan.md) — testing strategy and TC outlines
+
+----
+
 ## 1. TDD Discipline
 
 **Red → Green → Refactor. Never write implementation first.**
@@ -49,14 +57,18 @@ Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correc
 
 ## 6. Testing Methods
 
-| Layer | Tool | Location |
-|-------|------|----------|
-| DAO | Room in-memory + `runTest` | `test/.../data/dao/` |
-| Repository | Mock DAOs | `test/.../data/repository/` |
-| ViewModel | Fake Repository + Turbine | `test/.../ui/` |
-| Parser | Pure JUnit (string → entity) | `test/.../parser/` |
-| Compose UI | Compose Testing | `androidTest/.../ui/` |
-| Camera / ML Kit | Manual only | N/A |
+| Layer | Tool | Runner | Location |
+|-------|------|--------|----------|
+| DAO | Room in-memory + `runTest` | JUnit 5 | `test/.../data/dao/` |
+| Repository | Mock DAOs | JUnit 5 | `test/.../data/repository/` |
+| ViewModel | Fake Repository + Turbine | JUnit 5 | `test/.../ui/` |
+| Parser | Pure JUnit (string → entity) | JUnit 5 | `test/.../parser/` |
+| Compose UI | Compose Testing | AndroidJUnitRunner (JUnit 4) | `androidTest/.../ui/` |
+| Camera / ML Kit | Manual only | N/A | N/A |
+
+- All unit tests use `tasks.withType<Test> { useJUnitPlatform() }`.
+- All `@Test` annotations for unit tests import `org.junit.jupiter.api.Test`.
+- Instrumented tests use `androidx.test.ext.junit.runners.AndroidJUnit4`.
 
 ## 7. Language & Commit
 

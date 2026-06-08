@@ -14,7 +14,10 @@
 
 ## Right Now
 
-**Phase 0 complete.** Documents, Gradle skeleton, GitHub repo, CI workflow ready.
+**Phase 0 complete.** Full project skeleton with documents, Gradle (Kotlin DSL +
+version catalog + Compose/Room/CameraX/ML Kit deps), CI (lint + test + build),
+API-SPEC contract document, MIT license. Team: Tianyu Yao (@FrozenYty),
+Jianheng Sun (@chemflowers).
 
 ```
 Status: Phase 0 DONE → entering Phase 1 (Data Layer TDD)

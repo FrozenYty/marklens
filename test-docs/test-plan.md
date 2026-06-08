@@ -5,6 +5,11 @@
 Test-driven development (TDD) throughout. Every feature starts with a
 failing test before implementation.
 
+**Unit tests** use JUnit 5 (Jupiter platform) and run on the JVM.
+**Instrumented tests** use the AndroidJUnitRunner (JUnit 4 based) and
+require a device or emulator. See [API-SPEC.md](../API-SPEC.md) for the
+contracts each test verifies.
+
 ### Testing Methods
 
 | Method | Tool | Scope |
@@ -69,12 +74,29 @@ failing test before implementation.
 
 ## 3. Environment
 
+### Unit Tests (`app/src/test/`)
+
 | Item | Value |
 |------|-------|
 | Language | Kotlin |
-| Test runner | JUnit 5 + `kotlinx.coroutines.test` |
+| Test runner | JUnit 5 (Jupiter) via `useJUnitPlatform()` |
+| Coroutines | `kotlinx.coroutines.test.runTest` + `TestDispatcher` |
 | Mock framework | Mockito-Kotlin |
 | Flow testing | Turbine |
 | Room testing | `Room.inMemoryDatabaseBuilder` |
+
+### Instrumented Tests (`app/src/androidTest/`)
+
+| Item | Value |
+|------|-------|
+| Test runner | `AndroidJUnitRunner` (JUnit 4 based) |
 | Compose testing | `createComposeRule` + `ComposeTestRule` |
-| CI | GitHub Actions: `./gradlew test` + lint |
+| Espresso | For non-Compose system interactions |
+
+### CI
+
+| Job | Command |
+|-----|---------|
+| Lint | `./gradlew lint` |
+| Unit tests | `./gradlew test` |
+| Build | `./gradlew assembleDebug` |

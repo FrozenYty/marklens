@@ -30,13 +30,19 @@ MarkLens lets teachers digitize paper exam results by:
 ```
 marklens/
 ├── .claude/CLAUDE.md        # Project-level AI collaboration rules
-├── TASK-BRIEF.md            # Feature requirements
+├── .github/workflows/ci.yml # CI: lint + unit tests + build
+├── API-SPEC.md              # Full API contracts (entities, DAOs, UiState, routes)
+├── TASK-BRIEF.md            # Feature requirements + 5-phase plan
 ├── README.md                # You are here
 ├── PROGRESS.md              # Session state & progress tracking
+├── LICENSE                  # MIT (Tianyu Yao, Jianheng Sun)
 ├── test-docs/
-│   ├── test-plan.md
-│   ├── test-cases.md
-│   └── test-summary-report.md
+│   ├── test-plan.md         # Testing strategy + TC outlines
+│   ├── test-cases.md        # TC specs (append as implemented)
+│   └── test-summary-report.md  # Final report
+├── gradle/
+│   ├── libs.versions.toml   # Version catalog
+│   └── wrapper/             # Gradle wrapper
 ├── app/
 │   ├── build.gradle.kts
 │   └── src/
@@ -46,8 +52,8 @@ marklens/
 │       │   ├── parser/      # OCR text → structured entities
 │       │   ├── ui/          # Compose screens + ViewModels
 │       │   └── di/          # Manual dependency injection
-│       ├── test/            # Unit tests (DAO, Repository, ViewModel, Parser)
-│       └── androidTest/     # Instrumented tests (Compose UI, Room integration)
+│       ├── test/            # Unit tests (JUnit 5: DAO, Repository, ViewModel, Parser)
+│       └── androidTest/     # Instrumented tests (JUnit 4: Compose UI, Room integration)
 └── screenshots/             # Test evidence
 ```
 
