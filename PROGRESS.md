@@ -14,11 +14,11 @@
 
 ## Right Now
 
-**Phase 4 complete.** StatsCalculator (7 test methods), CsvExporter (3 tests).
-Phases 0-4 done. Only Phase 5 (Polish) remains.
+**Phases 0-4 complete. 73 tests passing.** Handed off to Jianheng Sun for Phase 5.
+See [HANDOVER.md](HANDOVER.md) for complete guide.
 
 ```
-Status: Phase 4 ✅ → Phase 5 (Polish) next
+Status: Phases 0-4 DONE ✅ → Phase 5 (Jianheng Sun)
 ```
 
 ---

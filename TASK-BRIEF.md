@@ -70,4 +70,20 @@ Photo → Region Selection → OCR → Structured Parse → Manual Correction �
 | 2 | Capture + OCR | CameraX, region selection UI, ML Kit integration | ✅ Done |
 | 3 | Parse + Edit | Structured parser, correction UI, save to DB | ✅ Done |
 | 4 | Stats + Export | List/detail screens, statistics, CSV export | ✅ Done |
-| 5 | Polish | Compose UI tests, bug fixes, docs | Pending |
+| 5 | Polish | Integration tests, bug fixes, docs | 🔜 Jianheng Sun |
+
+## Phase 5 — Polish (Assigned: Jianheng Sun)
+
+Priority order:
+
+| # | Task | Effort | Key files to touch |
+|---|------|--------|---------------------|
+| 1 | CameraX integration — wire real camera to CaptureScreen | Medium | `ui/capture/CaptureScreen.kt` |
+| 2 | Save pipeline — ReviewScreen → ExamRepository | Small | `ui/review/ReviewScreen.kt`, `ExamRepository.kt` |
+| 3 | RecordListScreen — list saved records with subject filter | Medium | New `ui/list/` |
+| 4 | StatsScreen — display stats with charts | Medium | New `ui/stats/` |
+| 5 | Region label picker — dropdown when creating regions | Small | `ui/capture/CaptureScreen.kt` |
+| 6 | Template save/load — region presets to DB | Small | `ui/capture/CaptureViewModel.kt` |
+| 7 | Compose UI tests — instrumented tests on emulator | Medium | `app/src/androidTest/` |
+
+See [HANDOVER.md](HANDOVER.md) for detailed guidance on each task.

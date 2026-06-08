@@ -57,6 +57,12 @@ marklens/
 └── screenshots/             # Test evidence
 ```
 
+## Project Status (2026-06-08)
+
+**73 unit tests passing** across 4 phases. Phase 5 (Polish) ready for Jianheng Sun.
+
+> 📋 **New collaborator?** Read [HANDOVER.md](HANDOVER.md) — complete guide to architecture, design system, testing, and future tasks.
+
 ## Getting Started
 
 ```bash
