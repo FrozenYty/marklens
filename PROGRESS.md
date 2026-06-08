@@ -9,16 +9,16 @@
 
 | Field | Value |
 |-------|-------|
-| **Working on** | Phase 3 — Parse + Edit |
+| **Working on** | Phase 4 — Stats & Export |
 | **Last updated** | 2026-06-08 |
 
 ## Right Now
 
-**Phase 3 — Parse + Edit in progress.** ScoreParser, StudentInfoParser, ReviewViewModel
-implemented. 17 new tests. Remaining: ReviewScreen composable.
+**Phase 4 complete.** StatsCalculator (7 test methods), CsvExporter (3 tests).
+Phases 0-4 done. Only Phase 5 (Polish) remains.
 
 ```
-Status: Phase 3 — parsers + ViewModel ✅ → ReviewScreen UI next
+Status: Phase 4 ✅ → Phase 5 (Polish) next
 ```
 
 ---
