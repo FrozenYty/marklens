@@ -82,7 +82,7 @@ Priority order:
 | 2 | Save pipeline — ReviewScreen → ExamRepository | Small | `ui/review/ReviewScreen.kt`, `ExamRepository.kt` |
 | 3 | **Screenshots** — 6-8 UI captures for final deliverable | Small | `screenshots/` |
 | 4 | RecordListScreen — list saved records with subject filter | Medium | New `ui/list/` |
-| 5 | StatsScreen — display stats with charts | Medium | New `ui/stats/` |
+| 5 | StatsScreen — 4 charts (histogram, donut, bars, heatmap) | Medium | New `ui/stats/`, see [viz spec](test-docs/phase5-data-visualization.md) |
 | 6 | Region label picker — dropdown when creating regions | Small | `ui/capture/CaptureScreen.kt` |
 | 7 | Template save/load — region presets to DB | Small | `ui/capture/CaptureViewModel.kt` |
 | 8 | Compose UI tests — instrumented tests on emulator | Medium | `app/src/androidTest/` |

@@ -207,7 +207,7 @@ If CI fails → fix the issue → commit → push. CI runs in ~2 minutes.
 | 🔴 2 | Save pipeline | Connect ReviewScreen → ExamRepository.saveExamWithScores. Parse String scores to Doubles, call repo. | Small |
 | 🔴 3 | **Screenshots for deliverable** | Capture 6-8 screenshots showing full pipeline. See Section 11 below. | Small |
 | 🟡 4 | RecordListScreen | List all saved records with subject filter. Tap → detail view. | Medium |
-| 🟡 5 | StatsScreen | Show StatsResult with Compose Canvas bar charts or simple text layout. | Medium |
+| 🟡 5 | StatsScreen + 4 charts | Score histogram, pass-rate donut, per-question bars, error heatmap. See [visualization spec](test-docs/phase5-data-visualization.md). | Medium |
 | 🟢 6 | Compose UI tests | Add instrumented tests for CaptureScreen and ReviewScreen (needs emulator). | Medium |
 | 🟢 7 | Template save/load | Save region presets to RegionTemplateDao. Load template → auto-create regions. | Small |
 | 🟢 8 | Region label picker | Dropdown or bottom sheet to select label when creating regions. | Small |
