@@ -157,6 +157,9 @@ interface QuestionScoreDao {
     @Query("SELECT * FROM question_scores WHERE examRecordId = :recordId ORDER BY questionNumber")
     fun getByExamRecord(recordId: Long): Flow<List<QuestionScore>>
 
+    @Query("SELECT * FROM question_scores WHERE examRecordId = :recordId ORDER BY questionNumber")
+    suspend fun getByExamRecordOnce(recordId: Long): List<QuestionScore>
+
     @Query("DELETE FROM question_scores WHERE examRecordId = :recordId")
     suspend fun deleteByExamRecord(recordId: Long)
 }
@@ -214,7 +217,7 @@ class ExamRepository(
     suspend fun deleteRecord(recordId: Long)
 
     // --- Region Templates ---
-    suspend fun saveTemplate(name: String, regions: List<OcrRegion>): Long
+    suspend fun saveTemplate(name: String, regionsJson: String): Long
     fun getAllTemplates(): Flow<List<RegionTemplate>>
     suspend fun deleteTemplate(template: RegionTemplate)
 }
@@ -236,22 +239,48 @@ data class OcrRegion(
 )
 
 enum class RegionLabel(val displayName: String) {
-    STUDENT_NAME("姓名"),
-    STUDENT_ID("学号"),
-    CLASS_NAME("班级"),
-    SUBJECT("科目"),
-    QUESTION_SCORE("题目得分"),
-    TOTAL_SCORE("总分"),
-    CUSTOM("自定义")
+    STUDENT_NAME("Name"),
+    STUDENT_ID("Student ID"),
+    CLASS_NAME("Class"),
+    SUBJECT("Subject"),
+    QUESTION_SCORE("Q Score"),
+    TOTAL_SCORE("Total Score"),
+    CUSTOM("Custom")
 }
 ```
 
 ### 4.2 OcrEngine
 
 ```kotlin
-class OcrEngine(private val recognizer: TextRecognizer) {
+class OcrEngine {
+    // Uses TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     suspend fun recognize(bitmap: Bitmap): Text
     suspend fun recognizeRegion(bitmap: Bitmap, region: RectF): String
+    fun close()
+}
+```
+
+### 4.3 TextBlock
+
+```kotlin
+// Simplified OCR block — decouples RegionMapper from ML Kit for testability
+data class TextBlock(
+    val text: String,
+    val boundingBox: RectF
+)
+```
+
+### 4.4 RegionMapper
+
+```kotlin
+class RegionMapper {
+    /**
+     * First-match-wins: each block is assigned to the first region it overlaps.
+     * @param blocks Simplified OCR text blocks
+     * @param regions User-defined regions with rect coordinates
+     * @return Updated regions with rawText filled
+     */
+    fun mapBlocksToRegions(blocks: List<TextBlock>, regions: List<OcrRegion>): List<OcrRegion>
 }
 ```
 
@@ -323,20 +352,23 @@ data class CaptureUiState(
     val capturedBitmap: Bitmap? = null,
     val regions: List<OcrRegion> = emptyList(),
     val selectedRegionId: String? = null,
-    val editingLabel: RegionLabel? = null,
-    val templates: List<RegionTemplate> = emptyList()
+    val selectedLabel: RegionLabel? = null,
+    val isRecognizing: Boolean = false,
+    val templateNames: List<String> = emptyList()
 )
 
-sealed interface CaptureEvent {
-    data class PhotoCaptured(val bitmap: Bitmap) : CaptureEvent
-    data class PhotoSelected(val uri: Uri) : CaptureEvent
-    data class RegionAdded(val region: OcrRegion) : CaptureEvent
-    data class RegionMoved(val regionId: String, val newRect: RectF) : CaptureEvent
-    data class RegionDeleted(val regionId: String) : CaptureEvent
-    data class RegionLabelChanged(val regionId: String, val label: RegionLabel) : CaptureEvent
-    data class TemplateSaved(val name: String) : CaptureEvent
-    data class TemplateLoaded(val template: RegionTemplate) : CaptureEvent
-    data object StartRecognition : CaptureEvent
+class CaptureViewModel(
+    private val repository: ExamRepository? = null,
+    private val ocrEngine: OcrEngine? = null
+) : ViewModel() {
+    val uiState: StateFlow<CaptureUiState>
+    fun setPhoto(bitmap: Bitmap)
+    fun addRegion(region: OcrRegion)
+    fun deleteRegion(regionId: String)
+    fun moveRegion(regionId: String, newRect: RectF)
+    fun changeRegionLabel(regionId: String, newLabel: RegionLabel)
+    fun selectRegion(regionId: String?)
+    fun clearRegions()
 }
 ```
 
@@ -354,19 +386,20 @@ data class ReviewUiState(
 
 data class ScoreField(
     val questionNumber: Int,
-    val score: String,
-    val maxScore: Double,
-    val regionImage: Bitmap?         // 裁剪后的区域图，辅助校对
+    val score: String,       // String for inline editing; parsed to Double at save time
+    val maxScore: Double
 )
 
-sealed interface ReviewEvent {
-    data class NameChanged(val value: String) : ReviewEvent
-    data class StudentIdChanged(val value: String) : ReviewEvent
-    data class ClassNameChanged(val value: String) : ReviewEvent
-    data class SubjectChanged(val value: String) : ReviewEvent
-    data class TotalScoreChanged(val value: String) : ReviewEvent
-    data class ScoreChanged(val questionNumber: Int, val value: String) : ReviewEvent
-    data object Save : ReviewEvent
+class ReviewViewModel : ViewModel() {
+    val uiState: StateFlow<ReviewUiState>
+    fun setParsedData(info: ParsedStudentInfo, subject: String, totalScore: String, scores: List<ScoreField>)
+    fun updateName(value: String)
+    fun updateStudentId(value: String)
+    fun updateClassName(value: String)
+    fun updateSubject(value: String)
+    fun updateTotalScore(value: String)
+    fun updateScore(questionNumber: Int, value: String)
+    fun markSaveComplete()
 }
 ```
 
@@ -415,12 +448,18 @@ data class QuestionStat(
 ## 7. StatsCalculator Contract
 
 ```kotlin
-class StatsCalculator {
-    fun calculate(
-        records: List<ExamRecord>,
-        allScores: Map<Long, List<QuestionScore>>  // recordId → scores
-    ): StatsUiState
+data class StatsResult(
+    val totalRecords: Int = 0,
+    val averageScore: Double = 0.0,
+    val maxScore: Double = 0.0,
+    val minScore: Double = 0.0,
+    val passRate: Double = 0.0,
+    val scoreDistribution: Map<String, Int> = emptyMap(),
+    val perQuestionStats: List<QuestionStat> = emptyList()
+)
 
+class StatsCalculator {
+    fun calculate(records: List<ExamRecord>, allScores: Map<Long, List<QuestionScore>>): StatsResult
     fun scoreDistribution(scores: List<Double>): Map<String, Int>
     fun perQuestionStats(allScores: Map<Long, List<QuestionScore>>): List<QuestionStat>
 }
@@ -442,7 +481,17 @@ sealed class Route(val path: String) {
 
 ---
 
-## 9. Data Flow
+## 9. CsvExporter Contract
+
+```kotlin
+object CsvExporter {
+    fun export(records: List<ExamRecord>, allScores: Map<Long, List<QuestionScore>>): String
+}
+```
+
+---
+
+## 10. Data Flow
 
 ```
 CaptureScreen              ReviewScreen              RecordListScreen
@@ -467,7 +516,7 @@ CaptureViewModel           ReviewViewModel           RecordListViewModel
 
 ---
 
-## 10. Breaking Change Policy
+## 11. Breaking Change Policy
 
 1. Entity field changes → require migration (Room `Migration`)
 2. DAO signature changes → update all Repository impls + tests
