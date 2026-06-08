@@ -51,7 +51,7 @@ class QuestionScoreDaoTest {
             QuestionScore(examRecordId = recordId, questionNumber = 2, score = 5.0, maxScore = 10.0, isWrong = true)
         ))
 
-        dao.getByExamRecord(1).test {
+        dao.getByExamRecord(recordId).test {
             assertEquals(2, awaitItem().size)
             cancelAndIgnoreRemainingEvents()
         }
@@ -64,7 +64,7 @@ class QuestionScoreDaoTest {
             QuestionScore(examRecordId = recordId, questionNumber = 1, score = 9.0, maxScore = 10.0, isWrong = false)
         ))
 
-        dao.getByExamRecord(1).test {
+        dao.getByExamRecord(recordId).test {
             val items = awaitItem()
             assertEquals(1, items[0].questionNumber)
             assertEquals(3, items[1].questionNumber)
@@ -77,7 +77,7 @@ class QuestionScoreDaoTest {
         dao.insertAll(listOf(
             QuestionScore(examRecordId = recordId, questionNumber = 1, score = 10.0, maxScore = 10.0, isWrong = false)
         ))
-        val scores = dao.getByExamRecordOnce(2)
+        val scores = dao.getByExamRecordOnce(recordId)
         assertEquals(1, scores.size)
         assertEquals(10.0, scores[0].score, 0.01)
     }
@@ -88,10 +88,10 @@ class QuestionScoreDaoTest {
             QuestionScore(id = 0, examRecordId = recordId, questionNumber = 1, score = 0.0, maxScore = 10.0, isWrong = true)
         ))
 
-        val scores = dao.getByExamRecordOnce(1)
+        val scores = dao.getByExamRecordOnce(recordId)
         dao.update(scores[0].copy(score = 8.5, isWrong = false))
 
-        val updated = dao.getByExamRecordOnce(1)
+        val updated = dao.getByExamRecordOnce(recordId)
         assertEquals(8.5, updated[0].score, 0.01)
         assertFalse(updated[0].isWrong)
     }
@@ -101,9 +101,9 @@ class QuestionScoreDaoTest {
         dao.insertAll(listOf(
             QuestionScore(examRecordId = recordId, questionNumber = 1, score = 8.0, maxScore = 10.0, isWrong = false)
         ))
-        dao.deleteByExamRecord(1)
+        dao.deleteByExamRecord(recordId)
 
-        val result = dao.getByExamRecordOnce(1)
+        val result = dao.getByExamRecordOnce(recordId)
         assertTrue(result.isEmpty())
     }
 }

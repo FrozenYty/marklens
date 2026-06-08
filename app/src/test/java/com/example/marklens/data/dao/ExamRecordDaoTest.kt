@@ -63,8 +63,8 @@ class ExamRecordDaoTest {
     @Test
     fun getBySubject_shouldFilterCorrectly() = runTest {
         dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.insert(createRecord(studentId + 1, "English", 85.0))
-        dao.insert(createRecord(3, "Math", 78.0))
+        dao.insert(createRecord(studentId, "English", 85.0))
+        dao.insert(createRecord(studentId, "Math", 78.0))
 
         dao.getBySubject("Math").test {
             val records = awaitItem()
@@ -77,10 +77,10 @@ class ExamRecordDaoTest {
     @Test
     fun getByStudentId_shouldReturnOnlyThatStudent() = runTest {
         dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.insert(createRecord(studentId + 1, "Math", 85.0))
+        dao.insert(createRecord(studentId, "Math", 85.0))
         dao.insert(createRecord(studentId, "English", 88.0))
 
-        dao.getByStudentId(1).test {
+        dao.getByStudentId(studentId).test {
             assertEquals(2, awaitItem().size)
             cancelAndIgnoreRemainingEvents()
         }
@@ -89,21 +89,21 @@ class ExamRecordDaoTest {
     @Test
     fun update_shouldPersistChanges() = runTest {
         val id = dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.update(ExamRecord(id = id, studentId = 1, subject = "Math", totalScore = 95.0, imageUri = ""))
+        dao.update(ExamRecord(id = id, studentId = studentId, subject = "Math", totalScore = 95.0, imageUri = ""))
         assertEquals(95.0, dao.getById(id)!!.totalScore, 0.01)
     }
 
     @Test
     fun delete_shouldRemoveRecord() = runTest {
         val id = dao.insert(createRecord(studentId, "Math", 90.0))
-        dao.delete(ExamRecord(id = id, studentId = 1, subject = "Math", totalScore = 90.0, imageUri = ""))
+        dao.delete(ExamRecord(id = id, studentId = studentId, subject = "Math", totalScore = 90.0, imageUri = ""))
         assertNull(dao.getById(id))
     }
 
     @Test
     fun getAll_shouldEmitAllRecords() = runTest {
         dao.insert(createRecord(studentId, "A", 100.0))
-        dao.insert(createRecord(studentId + 1, "B", 90.0))
+        dao.insert(createRecord(studentId, "B", 90.0))
 
         dao.getAll().test {
             assertEquals(2, awaitItem().size)
