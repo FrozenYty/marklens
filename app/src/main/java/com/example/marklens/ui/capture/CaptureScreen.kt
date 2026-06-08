@@ -196,7 +196,7 @@ private fun RegionOverlay(
                 }
         ) {
             // Background photo
-            drawImage(bitmap.asImageBitmap(), dstSize = Size(size.width, size.height))
+            drawImage(bitmap.asImageBitmap(), dstSize = IntSize(size.width.toInt(), size.height.toInt()))
 
             // Empty-state hint — pulsing crosshair
             if (!hasRegions) {
