@@ -63,7 +63,9 @@ com.example.marklens/
 
 ## 3. Design System
 
-### Color Tokens (`ui/theme/Theme.kt`)
+> **Full spec**: [test-docs/design-spec.md](test-docs/design-spec.md) — color tokens, typography, spacing scale, component patterns, chart colors, state handling, checklist. Read it before writing any UI code.
+
+### Quick Reference
 
 | Token | Hex | Usage |
 |-------|-----|-------|
@@ -74,15 +76,9 @@ com.example.marklens/
 | `Amber` | `#F4A261` | Drag preview |
 | `Slate` | `#64748B` | Secondary text / disabled |
 | `InkTranslucent` | `#CC1C1C2E` | Semi-transparent overlays |
+| `SurfaceWhite` | `#FFFFFF` | Cards, text fields |
 
-### Direction
-*Industrial Precision × Academic Warmth*. Dark immersive canvas, paper-white surfaces, red/green marking colors. All Composables import tokens from `com.example.marklens.ui.theme`.
-
-### Compose Patterns
-- **Screens**: `XxxScreen(viewModel)` with `collectAsState()`
-- **Cards**: `SectionCard(title) { content }` — white alpha-0.95 on dark bg
-- **Buttons**: `Button` with `RoundedCornerShape(12.dp)`, theme colors via `ButtonDefaults.buttonColors()`
-- **Fields**: `OutlinedTextField` with `fieldColors()` from ReviewScreen (green focus, red cursor, Slate unfocused)
+**Direction**: *Industrial Precision × Academic Warmth*. Dark canvas, paper-white cards, red/green marking. All colors from `com.example.marklens.ui.theme`.
 
 ---
 
