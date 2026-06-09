@@ -14,16 +14,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +67,8 @@ import com.example.marklens.ui.theme.SurfaceWhite
 @Composable
 fun CaptureScreen(
     viewModel: CaptureViewModel,
-    onPhotoCaptured: (Bitmap) -> Unit = {}
+    onGalleryClick: () -> Unit = {},
+    onReviewClick: (Bitmap, List<OcrRegion>) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -74,14 +84,68 @@ fun CaptureScreen(
                     bitmap = uiState.capturedBitmap!!,
                     regions = uiState.regions,
                     selectedId = uiState.selectedRegionId,
+                    templateNames = uiState.templateNames,
                     onRegionCreated = { rect ->
                         viewModel.addRegion(OcrRegion(label = RegionLabel.CUSTOM, rect = rect))
                     },
                     onRegionSelected = { id -> viewModel.selectRegion(id) },
                     onRegionDeleted = { id -> viewModel.deleteRegion(id) },
+                    onChangeLabel = { id, label -> viewModel.changeRegionLabel(id, label) },
                     onClear = viewModel::clearRegions,
+                    onSaveTemplate = { name -> viewModel.saveTemplate(name) },
+                    onLoadTemplate = { name -> viewModel.applyTemplate(name) },
+                    onRefreshTemplates = { viewModel.refreshTemplates() },
                     modifier = Modifier.fillMaxSize()
                 )
+
+                // Bottom action bar when photo is loaded
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(InkTranslucent)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = onGalleryClick,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Slate.copy(alpha = 0.3f),
+                            contentColor = SurfaceWhite
+                        ),
+                        modifier = Modifier.height(36.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+                    ) {
+                        Text("Change Photo", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Button(
+                        onClick = {
+                            uiState.capturedBitmap?.let { bmp ->
+                                onReviewClick(bmp, uiState.regions)
+                            }
+                        },
+                        enabled = uiState.regions.isNotEmpty(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = SoftGreen,
+                            contentColor = SurfaceWhite,
+                            disabledContainerColor = SoftGreen.copy(alpha = 0.3f),
+                            disabledContentColor = SurfaceWhite.copy(alpha = 0.3f)
+                        ),
+                        modifier = Modifier.height(36.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            if (uiState.regions.isNotEmpty()) "Review →" else "Draw regions first",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
             else -> {
                 // Empty state
@@ -104,6 +168,57 @@ fun CaptureScreen(
                         color = Slate.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.bodySmall
                     )
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = onGalleryClick,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = SoftGreen,
+                            contentColor = SurfaceWhite
+                        )
+                    ) {
+                        Text("📁 Select from Gallery")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = { viewModel.loadDemoBitmap() },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Amber.copy(alpha = 0.3f),
+                            contentColor = Amber
+                        )
+                    ) {
+                        Text("🎓 Load Demo Exam")
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Button(
+                        onClick = { viewModel.setPhotoFromPath("/data/local/tmp/truely.jpg") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Slate.copy(alpha = 0.3f),
+                            contentColor = SurfaceWhite
+                        )
+                    ) {
+                        Text("✍ Load handwriting")
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Button(
+                        onClick = {
+                            viewModel.setPhotoFromPath("/data/local/tmp/truely.jpg")
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                val bmp = viewModel.uiState.value.capturedBitmap
+                                val regs = viewModel.uiState.value.regions
+                                if (bmp != null) onReviewClick(bmp, regs)
+                            }, 1500)
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = SoftGreen.copy(alpha = 0.3f),
+                            contentColor = SoftGreen
+                        )
+                    ) {
+                        Text("🚀 Auto OCR → Review")
+                    }
                 }
             }
         }
@@ -137,10 +252,15 @@ private fun RegionOverlay(
     bitmap: Bitmap,
     regions: List<OcrRegion>,
     selectedId: String?,
+    templateNames: List<String>,
     onRegionCreated: (RectF) -> Unit,
     onRegionSelected: (String) -> Unit,
     onRegionDeleted: (String) -> Unit,
+    onChangeLabel: (String, RegionLabel) -> Unit,
     onClear: () -> Unit,
+    onSaveTemplate: (String) -> Unit,
+    onLoadTemplate: (String) -> Unit,
+    onRefreshTemplates: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var canvasSize by remember { mutableStateOf(IntSize(1, 1)) }
@@ -301,22 +421,135 @@ private fun RegionOverlay(
                 fontSize = 13.sp,
                 modifier = Modifier.weight(1f)
             )
-            ActionChip(
-                label = "Label",
-                color = SoftGreen,
-                onClick = {
-                    selectedId?.let { id ->
-                        val current = regions.find { it.id == id }
-                        if (current != null) {
-                            val labels = RegionLabel.entries
-                            val nextIdx = (labels.indexOf(current.label) + 1) % labels.size
-                            // Cycle label — handled in ViewModel
-                        }
+            // Label picker with dropdown
+            var labelExpanded by remember { mutableStateOf(false) }
+            Box {
+                ActionChip(
+                    label = selectedId?.let { id ->
+                        regions.find { it.id == id }?.label?.displayName ?: "Label"
+                    } ?: "Label",
+                    color = SoftGreen,
+                    onClick = { labelExpanded = true },
+                    enabled = selectedId != null
+                )
+                DropdownMenu(
+                    expanded = labelExpanded && selectedId != null,
+                    onDismissRequest = { labelExpanded = false }
+                ) {
+                    RegionLabel.entries.forEach { label ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    label.displayName,
+                                    color = if (selectedId?.let { id -> regions.find { it.id == id }?.label } == label)
+                                        SoftGreen else Ink
+                                )
+                            },
+                            onClick = {
+                                selectedId?.let { id -> onChangeLabel(id, label) }
+                                labelExpanded = false
+                            }
+                        )
                     }
-                },
-                enabled = selectedId != null
+                }
+            }
+            // Template management
+            TemplateSection(
+                hasRegions = hasRegions,
+                templateNames = templateNames,
+                onSaveTemplate = onSaveTemplate,
+                onLoadTemplate = onLoadTemplate,
+                onRefreshTemplates = onRefreshTemplates
             )
         }
+    }
+}
+
+@Composable
+private fun TemplateSection(
+    hasRegions: Boolean,
+    templateNames: List<String>,
+    onSaveTemplate: (String) -> Unit,
+    onLoadTemplate: (String) -> Unit,
+    onRefreshTemplates: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var showSaveDialog by remember { mutableStateOf(false) }
+    var templateNameInput by remember { mutableStateOf("") }
+
+    // Refresh templates when dropdown opens
+    LaunchedEffect(expanded) {
+        if (expanded) onRefreshTemplates()
+    }
+
+    Box {
+        ActionChip(
+            label = "Templates",
+            color = Slate,
+            onClick = { expanded = true },
+            enabled = true
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("💾 Save current...", color = if (hasRegions) SoftGreen else Slate) },
+                onClick = {
+                    expanded = false
+                    if (hasRegions) showSaveDialog = true
+                },
+                enabled = hasRegions
+            )
+            if (templateNames.isNotEmpty()) {
+                HorizontalDivider(color = Slate.copy(alpha = 0.2f))
+                templateNames.forEach { name ->
+                    DropdownMenuItem(
+                        text = { Text(name, color = Ink) },
+                        onClick = {
+                            expanded = false
+                            onLoadTemplate(name)
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // Save dialog
+    if (showSaveDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showSaveDialog = false },
+            title = { Text("Save Template", color = Ink) },
+            text = {
+                OutlinedTextField(
+                    value = templateNameInput,
+                    onValueChange = { templateNameInput = it },
+                    placeholder = { Text("e.g., Math Midterm") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (templateNameInput.isNotBlank()) {
+                            onSaveTemplate(templateNameInput.trim())
+                            templateNameInput = ""
+                            showSaveDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SoftGreen)
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showSaveDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -338,7 +571,7 @@ private fun ActionChip(
             disabledContentColor = Slate.copy(alpha = 0.3f)
         ),
         modifier = Modifier.height(36.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
     ) {
         Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }
