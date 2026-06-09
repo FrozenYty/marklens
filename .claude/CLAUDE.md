@@ -46,26 +46,28 @@ Compose UI → ViewModel → Repository → Room DAO → SQLite
 - Schema export: `app/schemas/`. Migration tested with `MigrationTestHelper`.
 - **DAO test FK pattern:** Create all parent rows in `@Before` using `fun setUp() = runBlocking { ... }` (Room DAOs are suspend, `@Before` is not). Never hardcode FK values — use variables set in `setUp()`. Add `robolectric.properties` with `sdk=34` when compileSdk exceeds Robolectric's supported version.
 
-## 5. Core Pipeline (O2C2R)
+## 5. Core Pipeline
 
 ```
-Camera → ML Kit OCR → Region Mapping → Structured Parser → Manual Correction → Room → Stats
+Gallery Photo → ML Kit Full-page OCR → RegionMapper (spatial) → Parsers → Manual Correction → Room → Stats
 ```
 
-- `ocr/`: ML Kit integration, region-to-text mapping.
-- `parser/`: regex + heuristics — raw text → domain entities.
-- `ui/review/`: correction & confirmation screen.
+- `ocr/`: ML Kit wrapper (`OcrEngine`), pluggable interface (`OcrProvider`), spatial block-to-region mapping (`RegionMapper`).
+- `parser/`: `ScoreParser` (table + single mode) + `StudentInfoParser` — raw text → domain entities.
+- `ui/review/`: correction & confirmation screen with original photo preview.
 
 ## 6. Testing Methods
 
 | Layer | Tool | Runner | Location |
 |-------|------|--------|----------|
 | DAO | Room in-memory + Robolectric + `runTest` | Robolectric + JUnit 5 | `test/.../data/dao/` |
-| Repository | Mock DAOs | JUnit 5 | `test/.../data/repository/` |
+| Repository | Mock DAOs | JUnit 5 | `test/.../data/` |
 | ViewModel | Fake Repository + Turbine | JUnit 5 | `test/.../ui/` |
 | Parser | Pure JUnit (string → entity) | JUnit 5 | `test/.../parser/` |
+| OCR | RegionMapper + mock TextBlocks | JUnit 5 | `test/.../ocr/` |
+| Utilities | Pure JUnit | JUnit 5 | `test/.../util/` |
 | Compose UI | Compose Testing | AndroidJUnitRunner (JUnit 4) | `androidTest/.../ui/` |
-| Camera / ML Kit | Manual only | N/A | N/A |
+| E2E OCR | generate_papers.py + batch import | Manual / device | `test-papers/` |
 
 - All unit tests use `tasks.withType<Test> { useJUnitPlatform() }`.
 - All `@Test` annotations for unit tests import `org.junit.jupiter.api.Test`.

@@ -17,17 +17,13 @@ extracting student info and scores via OCR, and reviewing statistics.
 
 ## Screenshots
 
-| Home | Templates | Template Editor |
-|------|-----------|-----------------|
-| ![Home](screenshots/home.png) | ![Templates](screenshots/template-list.png) | ![Editor](screenshots/template-editor.png) |
+| Home | Template List | Template Editor | Record List |
+|------|---------------|-----------------|-------------|
+| ![Home](screenshots/home.png) | ![Template List](screenshots/template-list.png) | ![Template Editor](screenshots/template-editor.png) | ![Record List](screenshots/record-list.png) |
 
-| Records | Statistics | Statistics Charts |
-|---------|------------|-------------------|
-| ![Records](screenshots/record-list.png) | ![Stats](screenshots/stats-overview.png) | ![Charts](screenshots/stats-charts.png) |
-
-| Review (Info) | Review (Scores) |
-|---------------|-----------------|
-| ![Review Info](screenshots/review-info.png) | ![Review Scores](screenshots/review-scores.png) |
+| Statistics-1 | Statistics-2 | Review-1 | Review-2 |
+|--------------|--------------|----------|----------|
+| ![Statistics-1](screenshots/stats-overview.png) | ![Statistics-2](screenshots/stats-charts.png) | ![Review-1](screenshots/review-info.png) | ![Review-2](screenshots/review-scores.png) |
 
 ## Architecture
 
@@ -136,4 +132,4 @@ extend with more sophisticated recognition and analysis capabilities.
 
 ## License
 
-MIT
+[MIT](LICENSE)
