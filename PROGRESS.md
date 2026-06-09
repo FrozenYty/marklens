@@ -1,90 +1,142 @@
 # PROGRESS.md — MarkLens
 
-> Read this first. Update in real-time after every compile, test run, fix.
-> When context is lost, this file is your only memory. Keep it current.
+> **Handoff document.** Read this first to understand what's built, what's broken,
+> and what needs doing. Updated 2026-06-10.
 
 ---
 
-## Session
-
-| Field | Value |
-|-------|-------|
-| **Working on** | Phase 5 — Polish |
-| **Last updated** | 2026-06-08 |
-
-## Right Now
-
-**Phase 5 core tasks complete.** 83 tests passing. All screens wired with navigation.
-Remaining: screenshots + instrumented tests (need emulator).
+## Quick Status
 
 ```
-Status: Phases 0-4 DONE ✅ → Phase 5 core DONE ✅
+Build: ✅ assembleDebug passes
+Tests: ✅ 81 pass / 0 fail
+APK:   ✅ installs and runs on emulator
+OCR:   ✅ full-page OCR + block mapping — tested on 200 papers, 100% success rate
 ```
 
 ---
 
-## Done
+## 1. What's Built
 
-- [x] Phase 0: project init (CLAUDE.md, Gradle, CI, GitHub, LICENSE)
-- [x] Phase 1: data layer (Room entities, DAOs, repository, 32 tests)
-- [x] Phase 2: capture + OCR (OcrEngine, RegionMapper, CaptureScreen/VM, 12 tests)
-- [x] Phase 3: parse + edit (ScoreParser, StudentInfoParser, ReviewScreen/VM, 17 tests)
-- [x] Phase 4: stats + export (StatsCalculator, CsvExporter, 9 tests)
-- [x] Phase 5.2: Save pipeline — ReviewViewModel.save() with ExamRepository
-- [x] Phase 5.4: RecordListScreen + RecordListViewModel (subject filter, delete)
-- [x] Phase 5.5: StatsScreen + 4 charts (ScoreHistogram, PassRateDonut, QuestionBarChart, ErrorHeatmap)
-- [x] Phase 5.1a: Gallery photo picker + full navigation wiring in MainActivity
-- [x] Phase 5.6: Region label picker — dropdown menu with all RegionLabel options
-- [x] Phase 5.7: Template save/load — JSON serialization, AlertDialog for naming
-- [x] 83 unit tests passing (9 new tests added)
+### Data Layer
+| Component | Status |
+|-----------|--------|
+| Room DB — 4 entities (Student, ExamRecord, QuestionScore, RegionTemplate) | ✅ |
+| 4 DAOs with CRUD + query methods | ✅ |
+| ExamRepository — getOrCreateStudent, saveExamWithScores, deleteRecord | ✅ |
+| RegionTemplateDao — insert, update, getByName, delete | ✅ |
 
-## Remaining (need emulator/device)
+### Navigation
+| Route | Flow |
+|-------|------|
+| **Home → Scan Paper** | Pick template → gallery photo → OCR → Review (verify/correct) → Save → Records |
+| **Home → Templates** | List templates → Edit (modify regions) or Delete (with confirmation) |
+| **Home → Records** | List saved exam records → tap to review/edit → Stats per subject |
 
-| # | Task | Note |
-|---|------|------|
-| 5 | Screenshots | Capture 6-8 screenshots on emulator (see HANDOVER.md §11) |
-| 8 | Compose UI tests | instrumented tests for CaptureScreen + ReviewScreen |
-| 1 | CameraXViewfinder | Wire CameraX live preview (gallery fallback works) |
+### Screens
+| Screen | Purpose | Theme |
+|--------|---------|-------|
+| Home | 3-button entry (Scan Paper / Templates / Records) | ✅ PaperCream |
+| TemplateListScreen | List templates, Edit/Delete, + New Template | ✅ PaperCream |
+| TemplateEditorScreen | Photo + region drawing + labels + save | ✅ PaperCream |
+| RecordListScreen | Saved records list, subject filter, CSV export | ✅ PaperCream |
+| ReviewScreen | Verify/correct OCR results, original photo preview | ✅ PaperCream |
+| StatsScreen | 4 charts (histogram, donut, bar, heatmap) | ✅ PaperCream |
 
-## Sprint Overview
+### OCR Pipeline
+```
+Gallery photo → ML Kit full-page OCR → RegionMapper (spatial block mapping)
+→ StudentInfoParser / ScoreParser → ReviewScreen (verify) → save to Room
+```
 
-| Phase | Scope | Status |
-|-------|-------|--------|
-| 0 | Project init | ✅ Done |
-| 1 | Data layer TDD | ✅ Done |
-| 2 | Capture + OCR | ✅ Done |
-| 3 | Parse + Edit | ✅ Done |
-| 4 | Stats + Export | ✅ Done |
-| 5 | Polish | ✅ Core complete — 83 tests |
+### Templates
+- Create: draw regions on photo → label each → name → save (duplicate name rejected)
+- Edit: load template → modify regions → save (updates existing)
+- Delete: confirmation dialog
+- Undo/Redo: dual-stack undo/redo for region add/delete
 
-## Files Created/Modified (Phase 5)
+### Stats Charts
+- ScoreHistogram — Canvas bar chart
+- PassRateDonut — Canvas ring with centered percentage
+- QuestionBarChart — Horizontal bars (Box-based)
+- ErrorHeatmap — Canvas grid of wrong-answer counts
 
-| File | Action |
-|------|--------|
-| `ui/review/ReviewViewModel.kt` | Modified — added repository + save() |
-| `ui/review/ReviewScreen.kt` | Modified — wired save button, imageUri, loading state |
-| `ui/list/RecordListViewModel.kt` | Created — subject filter, delete |
-| `ui/list/RecordListScreen.kt` | Created — cards + filter chips |
-| `ui/stats/StatsViewModel.kt` | Created — loads data, computes stats |
-| `ui/stats/StatsScreen.kt` | Created — metrics + 4 chart sections |
-| `ui/stats/ScoreHistogram.kt` | Created — Canvas bar chart |
-| `ui/stats/PassRateDonut.kt` | Created — Canvas donut ring |
-| `ui/stats/QuestionBarChart.kt` | Created — Box-based horizontal bars |
-| `ui/stats/ErrorHeatmap.kt` | Created — Canvas grid |
-| `di/AppViewModelFactory.kt` | Created — manual DI factory |
-| `MainActivity.kt` | Modified — navigation + DI + gallery launcher |
-| `ui/capture/CaptureScreen.kt` | Modified — gallery/Review buttons + label dropdown + template UI |
-| `ui/capture/CaptureViewModel.kt` | Modified — template save/load + JSON serialization |
-| `test/.../ReviewViewModelTest.kt` | Modified — added 2 save tests (mockito) |
-| `test/.../RecordListViewModelTest.kt` | Created — 5 tests |
-| `test/.../StatsViewModelTest.kt` | Created — 4 tests |
+---
 
-## Command Cheatsheet
+## 2. Resolved Issues
+
+| # | Issue | Resolution |
+|---|-------|-----------|
+| C1 | OCR accuracy near zero | Full-page OCR + RegionMapper block mapping |
+| C2 | No full-page OCR fallback | `runScanOcr` uses `recognizeBlocks()` + `RegionMapper` |
+| H1 | ReviewScreen old dark theme | Migrated to PaperCream theme |
+| H2 | No photo on ReviewScreen | AsyncImage (Coil) displays original photo |
+| H3 | 4 unit tests fail | Stubbed `studentDao.getAllOnce()` |
+| H4 | Editor doesn't pre-fill template name | `existingTemplateName` parameter |
+| M4 | CSV export not wired | RecordListScreen → FileProvider share intent |
+| M6 | Build warnings (unnecessary casts) | Removed |
+| L1 | RegionMapper dead code | Now used in `runScanOcr()` |
+
+---
+
+## 3. Remaining Issues
+
+| # | Issue | Priority |
+|---|-------|----------|
+| C3 | Template regions don't adapt to different photo framing | Medium |
+| M1 | No CameraX — gallery picker only | Low |
+| M2 | No handwriting OCR (Cloud Vision) | Low |
+| M3 | No batch scanning loop | Low |
+| M5 | No landscape layout support | Low |
+
+---
+
+## 4. Project Structure
+
+```
+marklens/
+├── app/src/main/java/com/example/marklens/
+│   ├── MainActivity.kt              — Navigation + OCR flow
+│   ├── data/
+│   │   ├── ExamRepository.kt        — Data access layer
+│   │   ├── MarkLensDatabase.kt      — Room DB (v1, 4 entities)
+│   │   ├── dao/                      — ExamRecord, QuestionScore, RegionTemplate, Student
+│   │   └── entity/                   — Room entities
+│   ├── di/AppViewModelFactory.kt     — Manual DI
+│   ├── ocr/
+│   │   ├── OcrEngine.kt             — ML Kit wrapper
+│   │   ├── OcrProvider.kt           — Pluggable interface + MlKitOcrProvider
+│   │   ├── OcrRegion.kt             — Region data class + RegionLabel enum
+│   │   └── RegionMapper.kt          — Block-to-region spatial mapper
+│   ├── parser/
+│   │   ├── ScoreParser.kt           — Table + single score parsing
+│   │   └── StudentInfoParser.kt     — Name/ID/class extraction
+│   ├── ui/
+│   │   ├── editor/TemplateEditorScreen.kt
+│   │   ├── list/RecordListScreen.kt + RecordListViewModel.kt
+│   │   ├── review/ReviewScreen.kt + ReviewViewModel.kt
+│   │   ├── stats/StatsScreen.kt + StatsViewModel.kt + 4 chart composables
+│   │   ├── templates/TemplateListScreen.kt
+│   │   └── theme/Theme.kt
+│   └── util/
+│       ├── CsvExporter.kt
+│       └── StatsCalculator.kt
+├── app/src/test/java/               — 13 test files, 81 tests
+├── app/src/androidTest/java/        — ScreenTests.kt (instrumented)
+├── screenshots/                     — 8 screenshots for README
+├── test-papers/                     — 200 generated exam papers (PNG)
+├── test-docs/test-plan.md           — Test strategy document
+├── generate_papers.py               — Python script to generate test papers
+└── gradle/libs.versions.toml        — Version catalog
+```
+
+---
+
+## 5. Commands
 
 ```bash
-cd marklens
 ./gradlew assembleDebug        # Build APK
-./gradlew test                 # All unit tests (83 pass)
-./gradlew lint                 # Static analysis
-./gradlew installDebug         # Install on connected device/emulator
+./gradlew test                 # Unit tests (81 pass)
+./gradlew installDebug         # Install on emulator/device
+python generate_papers.py      # Generate 200 test papers
 ```

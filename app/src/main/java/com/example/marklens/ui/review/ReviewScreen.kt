@@ -1,11 +1,15 @@
 package com.example.marklens.ui.review
 
+import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -30,15 +33,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.marklens.ui.theme.Ink
-import com.example.marklens.ui.theme.MarkRed
-import com.example.marklens.ui.theme.Paper
-import com.example.marklens.ui.theme.Slate
-import com.example.marklens.ui.theme.SoftGreen
-import com.example.marklens.ui.theme.SurfaceWhite
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.marklens.ui.theme.CardWhite
+import com.example.marklens.ui.theme.GradeRed
+import com.example.marklens.ui.theme.InkMuted
+import com.example.marklens.ui.theme.InkPrimary
+import com.example.marklens.ui.theme.PaperCream
+import com.example.marklens.ui.theme.StampTeal
 
 /**
  * Review & correction screen — displays parsed OCR results for user verification
@@ -50,11 +57,11 @@ import com.example.marklens.ui.theme.SurfaceWhite
 fun ReviewScreen(
     viewModel: ReviewViewModel,
     imageUri: String = "",
-    onSaved: () -> Unit = {}
+    onSaved: () -> Unit = {},
+    onCancel: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Navigate after successful save
     LaunchedEffect(uiState.saveComplete) {
         if (uiState.saveComplete) {
             onSaved()
@@ -64,20 +71,42 @@ fun ReviewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Ink)
+            .background(PaperCream)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
-        Text(
-            "Review & Correct",
-            color = SurfaceWhite,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text("Verify OCR results before saving", color = Slate, fontSize = 14.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.clip(RoundedCornerShape(8.dp)).background(InkMuted.copy(alpha = 0.1f))
+                .clickable(onClick = onCancel).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                Text("← Cancel", color = InkPrimary, fontSize = 13.sp)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text("Review & Correct", color = InkPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Verify OCR results before saving", color = InkMuted, fontSize = 14.sp)
+            }
+        }
+
+        // Original photo preview
+        if (imageUri.isNotBlank() && !imageUri.startsWith("record_")) {
+            SectionCard("Original Photo") {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(if (imageUri.startsWith("/")) java.io.File(imageUri) else Uri.parse(imageUri))
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Original exam photo",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
 
         // Student info section
         SectionCard("Student Information") {
@@ -124,7 +153,7 @@ fun ReviewScreen(
                     ) {
                         Text(
                             "Q${field.questionNumber}",
-                            color = Slate,
+                            color = InkMuted,
                             fontSize = 14.sp,
                             modifier = Modifier.width(32.dp)
                         )
@@ -138,7 +167,7 @@ fun ReviewScreen(
                         )
                         Text(
                             "/ ${field.maxScore.toInt()}",
-                            color = Slate,
+                            color = InkMuted,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(start = 8.dp)
                         )
@@ -155,16 +184,16 @@ fun ReviewScreen(
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = SoftGreen,
-                contentColor = SurfaceWhite,
-                disabledContainerColor = SoftGreen.copy(alpha = 0.5f),
-                disabledContentColor = SurfaceWhite.copy(alpha = 0.5f)
+                containerColor = StampTeal,
+                contentColor = CardWhite,
+                disabledContainerColor = StampTeal.copy(alpha = 0.5f),
+                disabledContentColor = CardWhite.copy(alpha = 0.5f)
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
             if (uiState.isSaving) {
                 CircularProgressIndicator(
-                    color = SurfaceWhite,
+                    color = CardWhite,
                     modifier = Modifier.height(24.dp),
                     strokeWidth = 2.dp
                 )
@@ -178,7 +207,7 @@ fun ReviewScreen(
         }
 
         if (uiState.saveComplete) {
-            Text("Record saved successfully.", color = SoftGreen, fontSize = 13.sp)
+            Text("Record saved successfully.", color = StampTeal, fontSize = 13.sp)
         }
     }
 }
@@ -192,12 +221,12 @@ private fun SectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(SurfaceWhite.copy(alpha = 0.95f))
+            .background(CardWhite)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(title, fontWeight = FontWeight.SemiBold, color = Ink, fontSize = 15.sp)
-        HorizontalDivider(color = Slate.copy(alpha = 0.2f))
+        Text(title, fontWeight = FontWeight.SemiBold, color = InkPrimary, fontSize = 15.sp)
+        HorizontalDivider(color = InkMuted.copy(alpha = 0.2f))
         content()
     }
 }
@@ -213,7 +242,7 @@ private fun FieldRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(label, color = Slate, fontSize = 13.sp, modifier = Modifier.width(72.dp))
+        Text(label, color = InkMuted, fontSize = 13.sp, modifier = Modifier.width(72.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -227,11 +256,11 @@ private fun FieldRow(
 
 @Composable
 private fun fieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = Ink,
-    unfocusedTextColor = Ink,
-    focusedBorderColor = SoftGreen,
-    unfocusedBorderColor = Slate.copy(alpha = 0.3f),
-    cursorColor = MarkRed,
-    focusedContainerColor = SurfaceWhite,
-    unfocusedContainerColor = SurfaceWhite
+    focusedTextColor = InkPrimary,
+    unfocusedTextColor = InkPrimary,
+    focusedBorderColor = StampTeal,
+    unfocusedBorderColor = InkMuted.copy(alpha = 0.3f),
+    cursorColor = GradeRed,
+    focusedContainerColor = CardWhite,
+    unfocusedContainerColor = CardWhite
 )

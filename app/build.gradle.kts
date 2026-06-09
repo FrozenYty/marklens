@@ -82,6 +82,9 @@ dependencies {
     // ML Kit
     implementation(libs.mlkit.text.recognition)
 
+    // Image loading
+    implementation(libs.coil.compose)
+
     // Coroutines
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.play.services)

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MarkLens: lined paper + elegant checkmark -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- White paper -->
+    <path android:fillColor="#FFFFFF" android:pathData="M20,16 L74,16 C76,16 78,18 78,20 L78,88 C78,90 76,92 74,92 L20,92 C18,92 16,90 16,88 L16,20 C16,18 18,16 20,16Z"/>
+    <path android:strokeColor="#D8D0C4" android:strokeWidth="0.8" android:fillColor="#00000000"
+        android:pathData="M20,16 L74,16 C76,16 78,18 78,20 L78,88 C78,90 76,92 74,92 L20,92 C18,92 16,90 16,88 L16,20 C16,18 18,16 20,16Z"/>
+
+    <!-- Folded corner -->
+    <path android:fillColor="#E8E2D5" android:pathData="M60,16 L78,34 L60,34Z"/>
+    <path android:strokeColor="#D8D0C4" android:strokeWidth="0.6" android:fillColor="#00000000"
+        android:pathData="M60,16 L78,34"/>
+
+    <!-- Red margin line -->
+    <path android:strokeColor="#D32F2F" android:strokeWidth="1.2" android:fillColor="#00000000"
+        android:pathData="M30,32 L30,84"/>
+
+    <!-- Ruled lines -->
+    <path android:strokeColor="#D8D2C6" android:strokeWidth="0.8" android:fillColor="#00000000"
+        android:pathData="M30,40 L72,40 M30,48 L72,48 M30,56 L72,56 M30,64 L72,64 M30,72 L72,72"/>
+
+    <!-- Elegant checkmark -->
+    <path android:strokeColor="#D32F2F" android:strokeWidth="3.5" android:fillColor="#00000000"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M38,48 L44,58 L56,34"/>
+</vector>

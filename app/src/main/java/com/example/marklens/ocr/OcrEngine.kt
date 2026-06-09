@@ -27,6 +27,16 @@ class OcrEngine {
      * Recognize text from a cropped region of the bitmap.
      * @param region normalized coordinates [0, 1]
      */
+    suspend fun recognizeBlocks(bitmap: Bitmap): List<TextBlock> {
+        val result = recognize(bitmap)
+        val iw = bitmap.width.toFloat(); val ih = bitmap.height.toFloat()
+        return result.textBlocks.map { block ->
+            val box = block.boundingBox ?: android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
+            TextBlock(block.text, android.graphics.RectF(
+                box.left / iw, box.top / ih, box.right / iw, box.bottom / ih))
+        }
+    }
+
     suspend fun recognizeRegion(bitmap: Bitmap, region: android.graphics.RectF): String {
         val cropped = crop(bitmap, region)
         val text = recognize(cropped)

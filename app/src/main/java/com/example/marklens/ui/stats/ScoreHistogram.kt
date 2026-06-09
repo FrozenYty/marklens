@@ -1,70 +1,40 @@
 package com.example.marklens.ui.stats
 
-import android.graphics.Paint
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.marklens.ui.theme.SoftGreen
+import androidx.compose.ui.unit.sp
+import com.example.marklens.ui.theme.*
 
-/**
- * Bar chart showing score distribution across buckets (0-29, 30-39, ..., 90-100).
- *
- * @author Jianheng Sun
- */
 @Composable
-fun ScoreHistogram(
-    distribution: Map<String, Int>,
-    modifier: Modifier = Modifier
-) {
-    val buckets = listOf("90-100", "80-89", "70-79", "60-69", "50-59", "40-49", "30-39", "0-29")
-    val maxCount = (distribution.values.maxOrNull() ?: 1).coerceAtLeast(1)
+fun ScoreHistogram(distribution: Map<String, Int>) {
+    if (distribution.isEmpty()) return
+    val entries = distribution.entries.sortedBy { it.key }
+    val maxCount = entries.maxOf { it.value }
+    val labelP = android.graphics.Paint().apply { color = 0xFF1E1A16.toInt(); textSize = 26f; isAntiAlias = true }
+    val valP = android.graphics.Paint().apply { color = 0xFF00796B.toInt(); textSize = 24f; isAntiAlias = true; isFakeBoldText = true }
 
-    Canvas(modifier = modifier.fillMaxWidth().height(200.dp)) {
-        val barW = size.width / buckets.size * 0.7f
-        val gap = size.width / buckets.size * 0.3f
-        val textPaint = Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = 24f
-            isAntiAlias = true
-        }
-        val countPaint = Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = 20f
-            isAntiAlias = true
-        }
-
-        buckets.forEachIndexed { i, bucket ->
-            val count = distribution[bucket] ?: 0
-            val barH = (count.toFloat() / maxCount) * (size.height - 28f)
-            val x = i * (barW + gap) + gap / 2
-            val y = size.height - barH - 24f
-
-            // Bar
-            drawRect(SoftGreen, Offset(x, y), Size(barW, barH.coerceAtLeast(2f)))
-
-            // X-axis label (abbreviated)
-            drawContext.canvas.nativeCanvas.drawText(
-                bucket.take(2),
-                x + barW / 4,
-                size.height - 4f,
-                textPaint
-            )
-
-            // Count on top
-            if (count > 0) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    "$count",
-                    x + barW / 4,
-                    y - 4f,
-                    countPaint
-                )
+    Column(Modifier.fillMaxWidth()) {
+        Text("Score distribution", fontSize = 11.sp, color = InkMuted)
+        Text("Students per score range", fontSize = 10.sp, color = InkFaint)
+        Spacer(Modifier.height(6.dp))
+        Canvas(Modifier.fillMaxWidth().height(130.dp)) {
+            val w = size.width; val h = size.height
+            val gap = w * 0.03f; val totalGap = gap * (entries.size + 1)
+            val barW = ((w - 30f) - totalGap) / entries.size
+            entries.forEachIndexed { i, (label, count) ->
+                val x = 15f + gap + i * (barW + gap)
+                val bh = (count.toFloat() / maxCount) * (h - 40f)
+                drawRect(StampTeal, Offset(x, h - 28f - bh), Size(barW, bh))
+                drawContext.canvas.nativeCanvas.drawText("$count", x + barW / 2f - 8f, h - 32f - bh, valP)
+                drawContext.canvas.nativeCanvas.drawText(label, x + barW / 2f - 16f, h, labelP)
             }
         }
     }

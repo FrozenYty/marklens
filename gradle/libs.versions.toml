@@ -17,6 +17,7 @@ robolectric = "4.14.1"
 junit = "5.11.4"
 espresso = "3.6.1"
 compose-test = "1.7.6"
+coil = "2.7.0"
 
 [libraries]
 # Compose BOM
@@ -68,6 +69,9 @@ mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", versio
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose-test" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+
+# Image loading
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

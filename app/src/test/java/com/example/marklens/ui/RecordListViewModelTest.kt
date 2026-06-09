@@ -31,13 +31,16 @@ class RecordListViewModelTest {
     private lateinit var examRecordDao: ExamRecordDao
     private lateinit var repository: ExamRepository
 
+    private lateinit var studentDao: StudentDao
+
     @Before
-    fun setUp() {
+    fun setUp() = kotlinx.coroutines.runBlocking {
         Dispatchers.setMain(testDispatcher)
         examRecordDao = mock()
-        val studentDao: StudentDao = mock()
+        studentDao = mock()
         val questionScoreDao: QuestionScoreDao = mock()
         val regionTemplateDao: RegionTemplateDao = mock()
+        whenever(studentDao.getAllOnce()).thenReturn(emptyList())
         repository = ExamRepository(studentDao, examRecordDao, questionScoreDao, regionTemplateDao)
     }
 

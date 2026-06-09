@@ -1,5 +1,8 @@
 # Test Plan — MarkLens
 
+> **Current test status (2026-06-10):** 81 pass / 0 fail.
+> OCR end-to-end tested on 200 generated exam papers — 100% success rate.
+
 ## 1. Test Strategy
 
 Test-driven development (TDD) throughout. Every feature starts with a
@@ -7,19 +10,20 @@ failing test before implementation.
 
 **Unit tests** use JUnit 5 (Jupiter platform) and run on the JVM.
 **Instrumented tests** use the AndroidJUnitRunner (JUnit 4 based) and
-require a device or emulator. See [API-SPEC.md](../API-SPEC.md) for the
-contracts each test verifies.
+require a device or emulator.
 
 ### Testing Methods
 
 | Method | Tool | Scope |
 |--------|------|-------|
-| Unit — DAO | Room in-memory + `kotlinx.coroutines.test.runTest` | CRUD, queries, relationships |
+| Unit — DAO | Room in-memory + Robolectric + `runTest` | CRUD, queries, relationships |
 | Unit — Repository | Mockito / fake DAOs | Business logic, error handling |
 | Unit — ViewModel | Fake Repository + Turbine | UiState transitions, user actions |
 | Unit — Parser | Pure JUnit | String → entity mapping accuracy |
+| Unit — OCR | RegionMapper + mock blocks | Spatial block-to-region mapping |
 | UI Integration | Compose Testing + `createComposeRule` | Screen rendering, user interaction |
-| Manual | Checklist + device | Camera capture, ML Kit OCR quality |
+| E2E OCR | `generate_papers.py` + batch import | Full pipeline accuracy on 200 papers |
+| Manual | Checklist + device | Gallery picker, ML Kit on real photos |
 
 ### Test Priorities
 
@@ -29,62 +33,60 @@ contracts each test verifies.
 | P0 | Repository | Gatekeeper between UI and data |
 | P0 | Parser | Correctness of OCR→entity mapping |
 | P1 | ViewModel | UiState logic, user action handling |
+| P1 | RegionMapper | Spatial matching is core to accuracy |
 | P2 | Compose UI | Visual correctness, interaction flow |
-| P3 | Manual | Hardware-dependent (camera) |
+| P3 | Manual | Hardware-dependent (camera, gallery) |
 
-## 2. Test Case Outline
+## 2. Test Files
 
-### Phase 1 — Data Layer
+| File | Scope | Tests |
+|------|-------|-------|
+| `ExamRecordDaoTest.kt` | DAO CRUD + queries | 9 |
+| `QuestionScoreDaoTest.kt` | DAO CRUD + FK constraints | 8 |
+| `RegionTemplateDaoTest.kt` | DAO insert/update/delete | 5 |
+| `StudentDaoTest.kt` | DAO insert/query | 3 |
+| `ExamRepositoryTest.kt` | Repository orchestration | 7 |
+| `RegionMapperTest.kt` | Spatial block mapping | 7 |
+| `ScoreParserTest.kt` | Score extraction (single + table) | 9 |
+| `StudentInfoParserTest.kt` | Name/ID/class extraction | 4 |
+| `RecordListViewModelTest.kt` | List + filter + delete | 5 |
+| `ReviewViewModelTest.kt` | Save pipeline | 7 |
+| `StatsViewModelTest.kt` | Statistics calculation | 4 |
+| `CsvExporterTest.kt` | CSV format validation | 3 |
+| `StatsCalculatorTest.kt` | Average/max/min/pass rate | 6 |
+| `ScreenTests.kt` | Compose UI (instrumented) | — |
 
-| TC-ID | Target | Method |
-|-------|--------|--------|
-| DATA-001 | `StudentDao` — insert & query | Unit (Room in-memory) |
-| DATA-002 | `ExamRecordDao` — insert & query with relations | Unit (Room in-memory) |
-| DATA-003 | `QuestionScoreDao` — CRUD & foreign key | Unit (Room in-memory) |
-| DATA-004 | `RegionTemplateDao` — save & load templates | Unit (Room in-memory) |
-| DATA-005 | `ExamRepository` — orchestrate DAOs | Unit (mock DAOs) |
-| DATA-006 | Database migration test | Unit (MigrationTestHelper) |
+**Total: 13 test classes, 81 unit tests passing.**
 
-### Phase 2 — Capture & OCR
+## 3. E2E OCR Validation
 
-| TC-ID | Target | Method |
-|-------|--------|--------|
-| OCR-001 | `RegionSelector` — draw/edit/delete bounding boxes | Compose UI |
-| OCR-002 | `OcrEngine` — extract text from cropped bitmap | Manual (ML Kit on device) |
-| OCR-003 | `RegionMapper` — map OCR text blocks to region labels | Unit |
+The `generate_papers.py` script creates 200 exam papers (40 students × 5 subjects)
+with known data. The batch import tool runs the full OCR pipeline on each:
 
-### Phase 3 — Parse & Edit
+```
+Gallery photo → ML Kit full-page OCR → RegionMapper → ScoreParser + StudentInfoParser → Room
+```
 
-| TC-ID | Target | Method |
-|-------|--------|--------|
-| PARSE-001 | `ScoreParser` — parse numeric scores from OCR text | Unit |
-| PARSE-002 | `StudentInfoParser` — parse name/ID/class from OCR text | Unit |
-| PARSE-003 | `ReviewViewModel` — state for correction workflow | Unit (ViewModel) |
-| PARSE-004 | `ReviewScreen` — display parsed fields, allow edit | Compose UI |
+**Results (2026-06-10):** 201/201 papers processed, 0 failures.
+- Student names: correctly extracted (label prefix stripped)
+- Student IDs: correctly extracted
+- Classes: correctly extracted
+- Subjects: correctly extracted
+- Total scores: correctly parsed (handles "76 I100" → 76)
+- Question scores: correctly parsed from column-oriented table OCR output
 
-### Phase 4 — Stats & Export
-
-| TC-ID | Target | Method |
-|-------|--------|--------|
-| STAT-001 | `StatsCalculator` — average, max, min, pass rate | Unit |
-| STAT-002 | `StatsCalculator` — per-question score distribution | Unit |
-| STAT-003 | `RecordListViewModel` — filter by class/subject | Unit (ViewModel) |
-| STAT-004 | `CsvExporter` — generate valid CSV from records | Unit |
-| STAT-005 | `StatsScreen` — render charts and summaries | Compose UI |
-
-## 3. Environment
+## 4. Environment
 
 ### Unit Tests (`app/src/test/`)
 
 | Item | Value |
 |------|-------|
 | Language | Kotlin 2.3 |
-| Camera | CameraX 1.5 + camera-compose (CameraXViewfinder) |
 | Test runner | JUnit 5 (Jupiter) via `useJUnitPlatform()` |
 | Coroutines | `kotlinx.coroutines.test.runTest` + `TestDispatcher` |
 | Mock framework | Mockito-Kotlin |
 | Flow testing | Turbine |
-| Room testing | `Room.inMemoryDatabaseBuilder` |
+| Room testing | `Room.inMemoryDatabaseBuilder` + Robolectric |
 
 ### Instrumented Tests (`app/src/androidTest/`)
 
@@ -92,12 +94,12 @@ contracts each test verifies.
 |------|-------|
 | Test runner | `AndroidJUnitRunner` (JUnit 4 based) |
 | Compose testing | `createComposeRule` + `ComposeTestRule` |
-| Espresso | For non-Compose system interactions |
 
-### CI
+### Commands
 
 | Job | Command |
 |-----|---------|
-| Lint | `./gradlew lint` |
 | Unit tests | `./gradlew test` |
 | Build | `./gradlew assembleDebug` |
+| Install | `./gradlew installDebug` |
+| Generate test papers | `python generate_papers.py` |

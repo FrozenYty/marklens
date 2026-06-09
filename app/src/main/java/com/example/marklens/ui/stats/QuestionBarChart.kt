@@ -1,95 +1,41 @@
 package com.example.marklens.ui.stats
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.marklens.ui.theme.*
 import com.example.marklens.util.QuestionStat
-import com.example.marklens.ui.theme.Amber
-import com.example.marklens.ui.theme.MarkRed
-import com.example.marklens.ui.theme.Slate
-import com.example.marklens.ui.theme.SoftGreen
 
-/**
- * Horizontal bar chart per question — average score ratio with color coding.
- *
- * @author Jianheng Sun
- */
+/** Average score per question (horizontal bars). Shows mean score out of max for each question number. */
 @Composable
-fun QuestionBarChart(
-    stats: List<QuestionStat>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-        for (stat in stats) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp)
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Q-number label
-                Text(
-                    "Q${stat.questionNumber}",
-                    color = Slate,
-                    fontSize = 12.sp,
-                    modifier = Modifier.width(32.dp)
-                )
+fun QuestionBarChart(stats: List<QuestionStat>) {
+    if (stats.isEmpty()) return
 
-                // Bar container
-                val ratio = (stat.averageScore / stat.maxScore).coerceIn(0.0, 1.0)
-                val barColor = when {
-                    ratio >= 0.8 -> SoftGreen
-                    ratio >= 0.6 -> Amber
-                    else -> MarkRed
+    Column(Modifier.fillMaxWidth()) {
+        Text("Average score by question", fontSize = 11.sp, color = InkMuted)
+        Text("Mean points earned out of maximum", fontSize = 10.sp, color = InkFaint)
+        Spacer(Modifier.height(6.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            for (q in stats) {
+                val pct = (q.averageScore / q.maxScore).toFloat().coerceIn(0f, 1f)
+                Row(Modifier.fillMaxWidth().height(26.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Q${q.questionNumber}", Modifier.width(28.dp), fontSize = 12.sp, color = InkMuted)
+                    Box(Modifier.weight(1f).height(18.dp).clip(RoundedCornerShape(9.dp))
+                        .background(StampTeal.copy(alpha = 0.12f))) {
+                        Box(Modifier.fillMaxHeight().fillMaxWidth(pct)
+                            .clip(RoundedCornerShape(9.dp)).background(StampTeal))
+                    }
+                    Text("${q.averageScore.toInt()}/${q.maxScore.toInt()}",
+                        Modifier.width(44.dp), fontSize = 11.sp, color = InkMuted)
                 }
-                Box(modifier = Modifier.weight(1f).height(20.dp)) {
-                    // Background
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Slate.copy(alpha = 0.2f))
-                    )
-                    // Fill
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(ratio.toFloat())
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(barColor)
-                    )
-                }
-
-                // Score text
-                Text(
-                    "${stat.averageScore.toInt()}/${stat.maxScore.toInt()}",
-                    color = Slate,
-                    fontSize = 11.sp,
-                    modifier = Modifier.width(48.dp)
-                )
-                // Error rate
-                Text(
-                    "${(stat.errorRate * 100).toInt()}% err",
-                    color = MarkRed.copy(alpha = 0.7f),
-                    fontSize = 10.sp,
-                    modifier = Modifier.width(48.dp)
-                )
             }
         }
     }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 
 data class RecordListUiState(
     val records: List<ExamRecord> = emptyList(),
+    val studentNames: Map<Long, String> = emptyMap(),
     val selectedSubject: String? = null,
     val subjects: List<String> = emptyList(),
     val isLoading: Boolean = true
@@ -42,6 +43,7 @@ class RecordListViewModel(
         val repo = repository
         if (repo != null) {
             viewModelScope.launch {
+                val names = repo.getStudentNameMap()
                 repo.getAllRecords().collect { records ->
                 allRecords = records
                 val subjects = records.map { it.subject }.distinct().sorted()
@@ -51,6 +53,7 @@ class RecordListViewModel(
                 _uiState.update {
                     it.copy(
                         records = filtered,
+                        studentNames = names,
                         subjects = subjects,
                         isLoading = false
                     )

@@ -1,12 +1,9 @@
 # API Specification — MarkLens
 
-> Contracts between modules. All collaborators MUST follow these signatures.
-> Breaking changes require updating this document, tests, and all callers.
->
 > **Authors**: Tianyu Yao, Jianheng Sun
-> **Updated**: 2026-06-08
-> **Dependencies verified** (Context7): AGP 9.2, Kotlin 2.3.21, Compose BOM 2026.05.00,
-> Room 2.8.4, CameraX 1.5 + camera-compose, ML Kit 16.0.1
+> **Updated**: 2026-06-10
+> **Dependencies**: AGP 9.2, Kotlin 2.3.21, Compose BOM 2026.05.00,
+> Room 2.8.4, CameraX 1.5, ML Kit 16.0.1, Coil 2.7.0
 
 ---
 
@@ -19,8 +16,8 @@
 data class Student(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val studentId: String,      // 学号
-    val className: String        // 班级
+    val studentId: String,
+    val className: String
 )
 ```
 
@@ -34,14 +31,15 @@ data class Student(
         parentColumns = ["id"],
         childColumns = ["studentId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index("studentId")]
 )
 data class ExamRecord(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val studentId: Long,
     val subject: String,
     val totalScore: Double,
-    val imageUri: String,         // 原始试卷图片路径
+    val imageUri: String,
     val createdAt: Long = System.currentTimeMillis()
 )
 ```
@@ -56,7 +54,8 @@ data class ExamRecord(
         parentColumns = ["id"],
         childColumns = ["examRecordId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index("examRecordId")]
 )
 data class QuestionScore(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -64,7 +63,7 @@ data class QuestionScore(
     val questionNumber: Int,
     val score: Double,
     val maxScore: Double,
-    val isWrong: Boolean           // 是否做错（得分 < 满分）
+    val isWrong: Boolean
 )
 ```
 
@@ -74,8 +73,8 @@ data class QuestionScore(
 @Entity(tableName = "region_templates")
 data class RegionTemplate(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val name: String,              // 模板名称 e.g. "期中数学卷"
-    val regionsJson: String        // JSON: List<OcrRegion>
+    val name: String,
+    val regionsJson: String    // JSON array of OcrRegion
 )
 ```
 
@@ -95,22 +94,13 @@ RegionTemplate (standalone)
 ```kotlin
 @Dao
 interface StudentDao {
-    @Insert
     suspend fun insert(student: Student): Long
-
-    @Update
     suspend fun update(student: Student)
-
-    @Delete
     suspend fun delete(student: Student)
-
-    @Query("SELECT * FROM students WHERE studentId = :studentId")
+    suspend fun getAllOnce(): List<Student>
+    suspend fun getById(id: Long): Student?
     suspend fun getByStudentId(studentId: String): Student?
-
-    @Query("SELECT * FROM students WHERE className = :className ORDER BY studentId")
     fun getByClass(className: String): Flow<List<Student>>
-
-    @Query("SELECT * FROM students ORDER BY studentId")
     fun getAll(): Flow<List<Student>>
 }
 ```
@@ -120,25 +110,12 @@ interface StudentDao {
 ```kotlin
 @Dao
 interface ExamRecordDao {
-    @Insert
     suspend fun insert(record: ExamRecord): Long
-
-    @Update
     suspend fun update(record: ExamRecord)
-
-    @Delete
     suspend fun delete(record: ExamRecord)
-
-    @Query("SELECT * FROM exam_records WHERE id = :id")
     suspend fun getById(id: Long): ExamRecord?
-
-    @Query("SELECT * FROM exam_records WHERE subject = :subject ORDER BY createdAt DESC")
     fun getBySubject(subject: String): Flow<List<ExamRecord>>
-
-    @Query("SELECT * FROM exam_records WHERE studentId = :studentId ORDER BY createdAt DESC")
     fun getByStudentId(studentId: Long): Flow<List<ExamRecord>>
-
-    @Query("SELECT * FROM exam_records ORDER BY createdAt DESC")
     fun getAll(): Flow<List<ExamRecord>>
 }
 ```
@@ -148,19 +125,10 @@ interface ExamRecordDao {
 ```kotlin
 @Dao
 interface QuestionScoreDao {
-    @Insert
     suspend fun insertAll(scores: List<QuestionScore>)
-
-    @Update
     suspend fun update(score: QuestionScore)
-
-    @Query("SELECT * FROM question_scores WHERE examRecordId = :recordId ORDER BY questionNumber")
     fun getByExamRecord(recordId: Long): Flow<List<QuestionScore>>
-
-    @Query("SELECT * FROM question_scores WHERE examRecordId = :recordId ORDER BY questionNumber")
     suspend fun getByExamRecordOnce(recordId: Long): List<QuestionScore>
-
-    @Query("DELETE FROM question_scores WHERE examRecordId = :recordId")
     suspend fun deleteByExamRecord(recordId: Long)
 }
 ```
@@ -170,22 +138,17 @@ interface QuestionScoreDao {
 ```kotlin
 @Dao
 interface RegionTemplateDao {
-    @Insert
     suspend fun insert(template: RegionTemplate): Long
-
-    @Query("SELECT * FROM region_templates ORDER BY name")
+    suspend fun update(template: RegionTemplate)
     fun getAll(): Flow<List<RegionTemplate>>
-
-    @Delete
+    suspend fun getByName(name: String): RegionTemplate?
     suspend fun delete(template: RegionTemplate)
 }
 ```
 
 ---
 
-## 3. Repository Contracts
-
-### 3.1 ExamRepository
+## 3. Repository
 
 ```kotlin
 class ExamRepository(
@@ -194,30 +157,20 @@ class ExamRepository(
     private val questionScoreDao: QuestionScoreDao,
     private val regionTemplateDao: RegionTemplateDao
 ) {
-    // --- Student ---
-    suspend fun getOrCreateStudent(name: String, studentId: String, className: String): Student
-    fun getStudentsByClass(className: String): Flow<List<Student>>
+    suspend fun getStudentNameMap(): Map<Long, String>
+    suspend fun getOrCreateStudent(name, studentId, className): Student
+    fun getStudentsByClass(className): Flow<List<Student>>
 
-    // --- ExamRecord + QuestionScores (atomic) ---
-    suspend fun saveExamWithScores(
-        student: Student,
-        subject: String,
-        totalScore: Double,
-        imageUri: String,
-        scores: List<QuestionScore>
-    ): Long  // returns examRecordId
-
-    // --- Queries ---
-    fun getRecordsBySubject(subject: String): Flow<List<ExamRecord>>
-    fun getRecordsByStudent(studentId: Long): Flow<List<ExamRecord>>
+    suspend fun saveExamWithScores(student, subject, totalScore, imageUri, scores): Long
+    fun getRecordsBySubject(subject): Flow<List<ExamRecord>>
+    fun getRecordsByStudent(studentId): Flow<List<ExamRecord>>
     fun getAllRecords(): Flow<List<ExamRecord>>
-    suspend fun getRecordWithScores(recordId: Long): Pair<ExamRecord, List<QuestionScore>>?
-
-    // --- Deletion ---
+    suspend fun getRecordWithScores(recordId): Pair<ExamRecord, List<QuestionScore>>?
     suspend fun deleteRecord(recordId: Long)
 
-    // --- Region Templates ---
-    suspend fun saveTemplate(name: String, regionsJson: String): Long
+    suspend fun saveTemplate(name, regionsJson): Long
+    suspend fun updateTemplate(id, name, regionsJson)
+    suspend fun getTemplateByName(name): RegionTemplate?
     fun getAllTemplates(): Flow<List<RegionTemplate>>
     suspend fun deleteTemplate(template: RegionTemplate)
 }
@@ -225,7 +178,7 @@ class ExamRepository(
 
 ---
 
-## 4. OCR Module Contracts
+## 4. OCR Module
 
 ### 4.1 OcrRegion
 
@@ -233,9 +186,9 @@ class ExamRepository(
 data class OcrRegion(
     val id: String = UUID.randomUUID().toString(),
     val label: RegionLabel,
-    val rect: RectF,              // 归一化坐标 [0,1]
-    val rawText: String = "",     // OCR result (filled after recognition)
-    val parsedValue: String = ""  // parsed user-facing value (filled after correction)
+    val rect: RectF,              // normalized [0, 1]
+    val rawText: String = "",
+    val parsedValue: String = ""
 )
 
 enum class RegionLabel(val displayName: String) {
@@ -249,168 +202,124 @@ enum class RegionLabel(val displayName: String) {
 }
 ```
 
-### 4.2 OcrEngine
+### 4.2 OcrProvider
+
+```kotlin
+interface OcrProvider {
+    suspend fun recognizeRegion(image: Bitmap, region: RectF): String
+    suspend fun recognizeBlocks(image: Bitmap): List<TextBlock>
+    fun close()
+}
+
+class MlKitOcrProvider : OcrProvider { ... }
+```
+
+### 4.3 OcrEngine
 
 ```kotlin
 class OcrEngine {
-    // Uses TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     suspend fun recognize(bitmap: Bitmap): Text
+    suspend fun recognizeBlocks(bitmap: Bitmap): List<TextBlock>
     suspend fun recognizeRegion(bitmap: Bitmap, region: RectF): String
     fun close()
 }
 ```
 
-### 4.3 TextBlock
-
-```kotlin
-// Simplified OCR block — decouples RegionMapper from ML Kit for testability
-data class TextBlock(
-    val text: String,
-    val boundingBox: RectF
-)
-```
-
 ### 4.4 RegionMapper
 
 ```kotlin
+data class TextBlock(val text: String, val boundingBox: RectF)
+
 class RegionMapper {
-    /**
-     * First-match-wins: each block is assigned to the first region it overlaps.
-     * @param blocks Simplified OCR text blocks
-     * @param regions User-defined regions with rect coordinates
-     * @return Updated regions with rawText filled
-     */
     fun mapBlocksToRegions(blocks: List<TextBlock>, regions: List<OcrRegion>): List<OcrRegion>
-}
-```
-
-### 4.3 RegionMapper
-
-```kotlin
-class RegionMapper {
-    /**
-     * Maps OCR Text blocks to OcrRegion list by spatial proximity.
-     * @param ocrText Full OCR result with block-level bounding boxes
-     * @param regions User-defined regions with rect coordinates
-     * @return Updated regions with rawText filled
-     */
-    fun mapBlocksToRegions(ocrText: Text, regions: List<OcrRegion>): List<OcrRegion>
 }
 ```
 
 ---
 
-## 5. Parser Contracts
+## 5. Parsers
 
 ### 5.1 ScoreParser
 
 ```kotlin
 class ScoreParser {
-    /**
-     * Parses a list of OcrRegion into a list of QuestionScore.
-     * Extracts numeric scores from QUESTION_SCORE regions.
-     * @param regions Regions with filled rawText
-     * @param examRecordId The parent exam record ID
-     * @return Parsed QuestionScore list
-     */
     fun parseScores(regions: List<OcrRegion>, examRecordId: Long): List<QuestionScore>
-
-    /**
-     * Parses total score from TOTAL_SCORE region.
-     * @return Parsed total score, or null if unparseable
-     */
     fun parseTotalScore(regions: List<OcrRegion>): Double?
 }
 ```
 
+Supports two modes:
+- **Multiple QUESTION_SCORE regions** — one per question, raw text like "8" or "8/10"
+- **Single QUESTION_SCORE region** — table format, column-oriented OCR text
+  (e.g., "Score 15 14 15 17 15 Max 20 20 20 20 20")
+
 ### 5.2 StudentInfoParser
 
 ```kotlin
-class StudentInfoParser {
-    /**
-     * Extracts student info from OCR regions.
-     * @return Triple(name, studentId, className) or null for each unparseable field
-     */
-    fun parse(regions: List<OcrRegion>): ParsedStudentInfo
-}
+data class ParsedStudentInfo(val name: String?, val studentId: String?, val className: String?)
 
-data class ParsedStudentInfo(
-    val name: String?,
-    val studentId: String?,
-    val className: String?
-)
+class StudentInfoParser {
+    fun parse(regions: List<OcrRegion>): ParsedStudentInfo
+
+    companion object {
+        fun cleanLabel(text: String?): String?  // strips "Label:" prefixes
+    }
+}
 ```
 
 ---
 
-## 6. ViewModel UiState Contracts
-
-### 6.1 CaptureScreen
+## 6. Navigation
 
 ```kotlin
-data class CaptureUiState(
-    val capturedBitmap: Bitmap? = null,
-    val regions: List<OcrRegion> = emptyList(),
-    val selectedRegionId: String? = null,
-    val selectedLabel: RegionLabel? = null,
-    val isRecognizing: Boolean = false,
-    val templateNames: List<String> = emptyList()
-)
-
-class CaptureViewModel(
-    private val repository: ExamRepository? = null,
-    private val ocrEngine: OcrEngine? = null
-) : ViewModel() {
-    val uiState: StateFlow<CaptureUiState>
-    fun setPhoto(bitmap: Bitmap)
-    fun addRegion(region: OcrRegion)
-    fun deleteRegion(regionId: String)
-    fun moveRegion(regionId: String, newRect: RectF)
-    fun changeRegionLabel(regionId: String, newLabel: RegionLabel)
-    fun selectRegion(regionId: String?)
-    fun clearRegions()
+sealed class Nav {
+    data object Home : Nav()
+    data object Editor : Nav()
+    data object Templates : Nav()
+    data object Records : Nav()
+    data class Review(val imageUri: String) : Nav()
+    data class Stats(val subject: String?) : Nav()
 }
 ```
 
-### 6.2 ReviewScreen
+Navigation is stack-based (`navStack: List<Nav>`), with `push()` and `pop()`.
+
+---
+
+## 7. ViewModel Contracts
+
+### 7.1 ReviewViewModel
 
 ```kotlin
 data class ReviewUiState(
-    val studentInfo: ParsedStudentInfo = ParsedStudentInfo(null, null, null),
-    val subject: String = "",
-    val totalScore: String = "",
-    val scores: List<ScoreField> = emptyList(),
-    val isSaving: Boolean = false,
-    val saveComplete: Boolean = false
+    val studentInfo: ParsedStudentInfo,
+    val subject: String,
+    val totalScore: String,
+    val scores: List<ScoreField>,
+    val isSaving: Boolean,
+    val saveComplete: Boolean
 )
 
-data class ScoreField(
-    val questionNumber: Int,
-    val score: String,       // String for inline editing; parsed to Double at save time
-    val maxScore: Double
-)
+data class ScoreField(val questionNumber: Int, val score: String, val maxScore: Double)
 
-class ReviewViewModel : ViewModel() {
+class ReviewViewModel(private val repository: ExamRepository?) : ViewModel() {
     val uiState: StateFlow<ReviewUiState>
-    fun setParsedData(info: ParsedStudentInfo, subject: String, totalScore: String, scores: List<ScoreField>)
-    fun updateName(value: String)
-    fun updateStudentId(value: String)
-    fun updateClassName(value: String)
-    fun updateSubject(value: String)
-    fun updateTotalScore(value: String)
-    fun updateScore(questionNumber: Int, value: String)
-    fun markSaveComplete()
+    fun setParsedData(info, subject, totalScore, scores)
+    fun updateName/updateStudentId/updateClassName/updateSubject/updateTotalScore(value)
+    fun updateScore(questionNumber, value)
+    fun save(imageUri: String)
 }
 ```
 
-### 6.3 RecordListScreen
+### 7.2 RecordListViewModel
 
 ```kotlin
 data class RecordListUiState(
-    val records: List<ExamRecord> = emptyList(),
-    val selectedSubject: String? = null,
-    val subjects: List<String> = emptyList(),
-    val isLoading: Boolean = true
+    val records: List<ExamRecord>,
+    val studentNames: Map<Long, String>,
+    val selectedSubject: String?,
+    val subjects: List<String>,
+    val isLoading: Boolean
 )
 
 sealed interface RecordListEvent {
@@ -418,70 +327,24 @@ sealed interface RecordListEvent {
     data class RecordClicked(val recordId: Long) : RecordListEvent
     data class RecordDeleted(val recordId: Long) : RecordListEvent
 }
-```
 
-### 6.4 StatsScreen
-
-```kotlin
-data class StatsUiState(
-    val subject: String,
-    val totalRecords: Int = 0,
-    val averageScore: Double = 0.0,
-    val maxScore: Double = 0.0,
-    val minScore: Double = 0.0,
-    val passRate: Double = 0.0,       // 0.0–1.0
-    val scoreDistribution: Map<String, Int> = emptyMap(),   // "90-100" → count
-    val perQuestionStats: List<QuestionStat> = emptyList()
-)
-
-data class QuestionStat(
-    val questionNumber: Int,
-    val maxScore: Double,
-    val averageScore: Double,
-    val errorRate: Double,            // 0.0–1.0, 做错比例
-    val totalAttempts: Int
-)
-```
-
----
-
-## 7. StatsCalculator Contract
-
-```kotlin
-data class StatsResult(
-    val totalRecords: Int = 0,
-    val averageScore: Double = 0.0,
-    val maxScore: Double = 0.0,
-    val minScore: Double = 0.0,
-    val passRate: Double = 0.0,
-    val scoreDistribution: Map<String, Int> = emptyMap(),
-    val perQuestionStats: List<QuestionStat> = emptyList()
-)
-
-class StatsCalculator {
-    fun calculate(records: List<ExamRecord>, allScores: Map<Long, List<QuestionScore>>): StatsResult
-    fun scoreDistribution(scores: List<Double>): Map<String, Int>
-    fun perQuestionStats(allScores: Map<Long, List<QuestionScore>>): List<QuestionStat>
+class RecordListViewModel(private val repository: ExamRepository?) : ViewModel() {
+    val uiState: StateFlow<RecordListUiState>
+    fun onEvent(event: RecordListEvent)
 }
 ```
 
----
-
-## 8. Navigation Routes
+### 7.3 StatsViewModel
 
 ```kotlin
-sealed class Route(val path: String) {
-    data object Capture : Route("capture")
-    data object Review : Route("review")
-    data object RecordList : Route("records")
-    data class RecordDetail(val recordId: Long) : Route("records/{recordId}")
-    data class Stats(val subject: String) : Route("stats/{subject}")
-}
+class StatsViewModel(private val repository: ExamRepository, subject: String?) : ViewModel()
 ```
 
 ---
 
-## 9. CsvExporter Contract
+## 8. Utilities
+
+### 8.1 CsvExporter
 
 ```kotlin
 object CsvExporter {
@@ -489,37 +352,37 @@ object CsvExporter {
 }
 ```
 
----
+### 8.2 StatsCalculator
 
-## 10. Data Flow
-
-```
-CaptureScreen              ReviewScreen              RecordListScreen
-    │                           │                         │
-    ▼                           ▼                         ▼
-CaptureViewModel           ReviewViewModel           RecordListViewModel
-    │                           │                         │
-    │  OcrEngine.recognize()    │  ScoreParser.parse()    │
-    │  RegionMapper.map()       │  StudentInfoParser      │
-    │                           │                         │
-    │                           ▼                         │
-    │                    ExamRepository              ExamRepository
-    │                    .saveExamWithScores()       .getAllRecords()
-    │                           │                         │
-    └───────────────────────────┴─────────────────────────┘
-                                    │
-                                    ▼
-                              Room Database
-                        (students, exam_records,
-                         question_scores, region_templates)
+```kotlin
+class StatsCalculator {
+    fun calculate(records: List<ExamRecord>, allScores: Map<Long, List<QuestionScore>>): StatsResult
+}
 ```
 
 ---
 
-## 11. Breaking Change Policy
+## 9. Data Flow
 
-1. Entity field changes → require migration (Room `Migration`)
-2. DAO signature changes → update all Repository impls + tests
-3. UiState field changes → update ViewModel + UI test
-4. Update this document **before** committing the implementation
-5. Add `@Deprecated` annotation for one version before removing old APIs
+```
+Home
+ ├─ Scan Paper → pick template → gallery photo
+ │      ↓
+ │  ML Kit recognizeBlocks(fullPage)
+ │      ↓
+ │  RegionMapper.mapBlocksToRegions()
+ │      ↓
+ │  StudentInfoParser + ScoreParser
+ │      ↓
+ │  ReviewScreen (verify/correct) → save()
+ │      ↓
+ │  ExamRepository.saveExamWithScores()
+ │      ↓
+ │  Room Database
+ │
+ ├─ Templates → Editor (draw regions, label, save)
+ │
+ └─ Records → list / filter / delete / CSV export
+        ↓
+    Statistics (charts)
+```

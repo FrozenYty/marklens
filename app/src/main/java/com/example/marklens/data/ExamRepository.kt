@@ -18,6 +18,10 @@ class ExamRepository(
 ) {
     // ── Student ──
 
+    suspend fun getStudentNameMap(): Map<Long, String> {
+        return studentDao.getAllOnce().associate { it.id to it.name }
+    }
+
     suspend fun getOrCreateStudent(name: String, studentId: String, className: String): Student {
         val existing = studentDao.getByStudentId(studentId)
         if (existing != null) return existing
@@ -76,8 +80,21 @@ class ExamRepository(
 
     // ── Region Templates ──
 
-    suspend fun saveTemplate(name: String, regionsJson: String): Long =
-        regionTemplateDao.insert(RegionTemplate(name = name, regionsJson = regionsJson))
+    suspend fun saveTemplate(name: String, regionsJson: String): Long {
+        val existing = regionTemplateDao.getByName(name)
+        if (existing != null) throw IllegalStateException("Template \"$name\" already exists")
+        return regionTemplateDao.insert(RegionTemplate(name = name, regionsJson = regionsJson))
+    }
+
+    suspend fun updateTemplate(id: Long, name: String, regionsJson: String) {
+        val existing = regionTemplateDao.getByName(name)
+        if (existing != null && existing.id != id)
+            throw IllegalStateException("Template \"$name\" already exists")
+        regionTemplateDao.update(RegionTemplate(id = id, name = name, regionsJson = regionsJson))
+    }
+
+    suspend fun getTemplateByName(name: String): RegionTemplate? =
+        regionTemplateDao.getByName(name)
 
     fun getAllTemplates(): Flow<List<RegionTemplate>> =
         regionTemplateDao.getAll()
