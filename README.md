@@ -1,9 +1,14 @@
 # MarkLens
 
-> Exam paper digitization — photograph, extract, analyze.
+> ⚠️ **Design Prototype — Not for Production Use**
+>
+> This is a UI/UX design exploration and architecture spike for exam paper digitization.
+> It demonstrates design concepts and technical feasibility but is **not functional software**.
+> See [Limitations](#limitations) for details.
 
-MarkLens lets teachers digitize paper exam results by photographing sheets,
-extracting student info and scores via OCR, and reviewing statistics.
+MarkLens explores the idea of digitizing paper exam results — photograph sheets,
+extract student info and scores via OCR, and review statistics. Built as a demo to
+validate design approaches and technical feasibility.
 
 ## Features
 
